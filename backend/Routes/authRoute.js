@@ -48,7 +48,7 @@ router.post("/auth/login", (req, res, next) => {
           if (mentorRes.length > 0) {
             roles.mentor_reg_num = mentorRes[0].mentor_reg_num;
           }
-
+          console.log(roles, "roles");
           // Generate JWT after both queries
           const token = jwt.sign({
             id: user.id,
@@ -61,7 +61,7 @@ router.post("/auth/login", (req, res, next) => {
             httpOnly: true,
             secure: false,
             sameSite: "lax",
-            maxAge: 60 * 60 * 1000
+            maxAge: 6 * 60 * 60 * 1000
           });
 
           res.status(200).json({

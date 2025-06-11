@@ -332,9 +332,9 @@ router.post("/student/fetch_team_status_and_invitations", (req, res, next) => {
 
 router.patch("/student/team_request/conform_team", userAuth, (req, res, next) => {
   try {
-    const { name, emailId, reg_num, dept, from_reg_num } = req.body;
+    const { name, emailId, reg_num, dept, from_reg_num, semester } = req.body;
 
-    if (!name || !emailId || !reg_num || !dept || !from_reg_num) {
+    if (!name || !emailId || !reg_num || !dept || !from_reg_num || !semester) {
       return next(createError.BadRequest("Some required fields are missing!"));
     }
 
@@ -355,8 +355,8 @@ router.patch("/student/team_request/conform_team", userAuth, (req, res, next) =>
         if (rows.length === 0) {
           console.log("sampleuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu");
           // Insert leader into teams table
-          const insertLeaderIntoTeams = `INSERT INTO teams (team_id, reg_num, is_leader) VALUES (?, ?, 1)`;
-          db.query(insertLeaderIntoTeams, [team_id, reg_num], (err) => {
+          const insertLeaderIntoTeams = `INSERT INTO teams (team_id, reg_num, semester, is_leader) VALUES (?, ?, ?, 1)`;
+          db.query(insertLeaderIntoTeams, [team_id, reg_num, semester], (err) => {
             if (err) return next(err);
             if (result.affectedRows === 0) return next(createError.BadRequest('some rows are not affected!'));
 
@@ -401,8 +401,8 @@ router.patch("/student/team_request/conform_team", userAuth, (req, res, next) =>
             if (teamMates.length === 0) return next('team mates not found!');
             for (let i = 0; i < teamMates.length; i++) {
               // insert into teams table
-              let insertSql = "insert into teams (team_id, reg_num, is_leader) values (?,?,?)";
-              db.query(insertSql, [team_id, teamMates[i].reg_num, 0,], (error, result) => {
+              let insertSql = "insert into teams (team_id, reg_num, semester, is_leader) values (?,?,?,?)";
+              db.query(insertSql, [team_id, teamMates[i].reg_num, semester, 0,], (error, result) => {
                 if (error) return next(error);
                 if (result.affectedRows === 0) return next(createError.BadRequest('teamMate is not inserted into the table1'));
 
@@ -416,8 +416,8 @@ router.patch("/student/team_request/conform_team", userAuth, (req, res, next) =>
               if (result2.affectedRows === 0) return res.status(500).send("Could not assign team ID.");
 
               // insert leader into the team table
-              let insertTeamLeader = "insert into teams (team_id,reg_num,is_leader) values (?,?,?)";
-              db.query(insertTeamLeader, [team_id, reg_num, 1], (error, result) => {
+              let insertTeamLeader = "insert into teams (team_id,reg_num,is_leader, semester) values (?,?,?,?)";
+              db.query(insertTeamLeader, [team_id, reg_num, 1, semester], (error, result) => {
                 if (error) return next(error);
                 if (result.affectedRows === 0) return next(createError.BadRequest('some rows are not affected!'));
 
@@ -1058,7 +1058,7 @@ router.post("/student/send_review_request/:team_id/:project_id/:reg_num", userAu
               else if (review_title === "2nd_review") weekToCheck = 6;
 
               if (review_title === "1st_review" || review_title === "2nd_review") {
-                const sqlVerifyWeek = "SELECT * FROM weekly_logs_verifications WHERE week_number = ? AND is_verified = true AND team_id = ?";
+                const sqlVerifyWeek = "SELECT * FROM weekly_logs_verification WHERE week_number = ? AND is_verified = true AND team_id = ?";
                 db.query(sqlVerifyWeek, [weekToCheck, team_id], (err3, verifyResult) => {
                   if (err3) return next(err3);
                   if (verifyResult.length === 0) {

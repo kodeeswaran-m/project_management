@@ -15,31 +15,31 @@ function ReviewProjects() {
   const [meetingLink, setMeetingLink] = useState('');
   const [rejectingRequestId, setRejectingRequestId] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
-  
+
   // Separate upcoming reviews for guide and expert roles
   const [guideUpcomingReviews, setGuideUpcomingReviews] = useState({});
   const [expertUpcomingReviews, setExpertUpcomingReviews] = useState({});
-  
+
   // States for meeting end time functionality
   const [clickedMeetings, setClickedMeetings] = useState(new Set());
   const [endTimes, setEndTimes] = useState({});
   const [submittingEndTime, setSubmittingEndTime] = useState(null);
   const [markedEndTimes, setMarkedEndTimes] = useState({});
-  
+
   // New states for marks functionality
   const [showMarksModal, setShowMarksModal] = useState(false);
   const [currentReviewForMarks, setCurrentReviewForMarks] = useState(null);
   const [teamMembers, setTeamMembers] = useState([]);
-const [teamMarks, setTeamMarks] = useState({
-  literature_survey: "",
-  aim: "",
-  scope: "",
-  need_for_study: "",
-  proposed_methodology: "",
-  work_plan: "",
-  remarks: ""
-});
- const [individualMarks, setIndividualMarks] = useState({});
+  const [teamMarks, setTeamMarks] = useState({
+    literature_survey: "",
+    aim: "",
+    scope: "",
+    need_for_study: "",
+    proposed_methodology: "",
+    work_plan: "",
+    remarks: ""
+  });
+  const [individualMarks, setIndividualMarks] = useState({});
 
   const [submittingMarks, setSubmittingMarks] = useState(false);
   const [marksAlreadyEntered, setMarksAlreadyEntered] = useState({});
@@ -53,7 +53,7 @@ const [teamMarks, setTeamMarks] = useState({
         instance.get(`/guide/fetch_review_requests/${guideRegNum}`),
         instance.get(`/sub_expert/fetch_review_requests/${guideRegNum}`)
       ]);
-
+      console.log(guideRes, "GuideRes", expertRes, "expertRes");
       setGuideReviewRequests(guideRes.data);
       setExpertReviewRequests(expertRes.data);
     } catch (err) {
@@ -95,10 +95,12 @@ const [teamMarks, setTeamMarks] = useState({
     const reviewMap = {};
     for (const team of teams) {
       try {
+        console.log(team, "team", "fetchGuideUpcomingReviews");
         const teamId = team.team_id || team.from_team_id;
         const res = await instance.get(`/guide/fetch_upcoming_reviews/${guideRegNum}`);
+        console.log(res.data, "/guide/fetch_upcoming_reviews/");
         reviewMap[teamId] = res.data;
-        
+
         // Check end time status and marks status for each review
         for (const review of res.data) {
           checkEndTimeStatus(review.review_id || review.id);
@@ -114,19 +116,22 @@ const [teamMarks, setTeamMarks] = useState({
   // Fetch upcoming reviews for expert teams
   const fetchExpertUpcomingReviews = async (teams) => {
     const reviewMap = {};
+    console.log(teams, "here");
     for (const team of teams) {
       try {
+        console.log(team, "team1");
         const teamId = team.team_id || team.from_team_id;
         const res = await instance.get(`/sub_expert/fetch_upcoming_reviews/${guideRegNum}`);
+        console.log(res.data);
         reviewMap[teamId] = res.data;
-        
+
         // Check end time status and marks status for each review
         for (const review of res.data) {
           checkEndTimeStatus(review.review_id || review.id);
           checkMarksStatus(review.review_id || review.id);
         }
       } catch (error) {
-        console.log(`No upcoming expert reviews for team ${team.team_id || team.from_team_id}`);
+        console.log(`No upcoming expert reviews for team ${team.team_id || team.from_team_id}`, error.response.data.error.message);
       }
     }
     setExpertUpcomingReviews(reviewMap);
@@ -137,8 +142,11 @@ const [teamMarks, setTeamMarks] = useState({
     const fetchGuideRequests = async () => {
       try {
         const res = await instance.get(`/guide/fetch_guiding_teams/${guideRegNum}`);
-        setGuideTeams(res.data);
-        fetchGuideUpcomingReviews(res.data);
+        let teamsList = Array.isArray(res.data) && res.data.length > 0 ? res.data : [];
+
+        setExpertTeams(teamsList);
+        console.log(teamsList, "data");
+        fetchExpertUpcomingReviews(teamsList);
       } catch (error) {
         console.log(error);
       }
@@ -154,10 +162,13 @@ const [teamMarks, setTeamMarks] = useState({
     const fetchExpertRequests = async () => {
       try {
         const res = await instance.get(`/sub_expert/fetch_teams/${guideRegNum}`);
-        setExpertTeams(res.data);
-        fetchExpertUpcomingReviews(res.data);
+        let teamsList = Array.isArray(res.data) && res.data.length > 0 ? res.data : [];
+
+        setExpertTeams(teamsList);
+        console.log(teamsList, "data");
+        fetchExpertUpcomingReviews(teamsList);
       } catch (error) {
-        console.log(error);
+        console.log(error, "adadadadadadadadad");
       }
     };
 
@@ -240,7 +251,7 @@ const [teamMarks, setTeamMarks] = useState({
   const handleEndTimeSubmit = async (review) => {
     const reviewKey = review.key;
     const endTime = endTimes[reviewKey];
-    
+
     if (!endTime || !endTime.match(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/)) {
       alert('Please enter a valid end time in HH:MM:SS format');
       return;
@@ -248,7 +259,7 @@ const [teamMarks, setTeamMarks] = useState({
 
     try {
       setSubmittingEndTime(reviewKey);
-      
+
       // Using same API endpoint for both guide and expert roles
       const response = await instance.patch(`/sub_expert/mark_end_time/${review.review_id || review.id}`, {
         project_id: review.project_id,
@@ -257,20 +268,20 @@ const [teamMarks, setTeamMarks] = useState({
       });
 
       alert('Mark end time updated!');
-      
+
       // Update the markedEndTimes state to reflect the newly marked time
       setMarkedEndTimes(prev => ({
         ...prev,
         [review.review_id || review.id]: endTime
       }));
-      
+
       // Clear the end time input and remove from clicked meetings
       setEndTimes(prev => {
         const newEndTimes = { ...prev };
         delete newEndTimes[reviewKey];
         return newEndTimes;
       });
-      
+
       setClickedMeetings(prev => {
         const newSet = new Set(prev);
         newSet.delete(reviewKey);
@@ -289,11 +300,11 @@ const [teamMarks, setTeamMarks] = useState({
   const handleOpenMarksModal = async (review) => {
     setCurrentReviewForMarks(review);
     setShowMarksModal(true);
-    
+
     // Fetch team members
     const members = await fetchTeamMembers(review.team_id);
     setTeamMembers(members);
-    
+
     // Initialize individual marks
     const initialMarks = {};
     members.forEach(member => {
@@ -304,117 +315,117 @@ const [teamMarks, setTeamMarks] = useState({
   };
 
   // Handle marks submission
-const handleMarksSubmit = async () => {
-  const requiredFields = [
-    "literature_survey",
-    "aim",
-    "scope",
-    "need_for_study",
-    "proposed_methodology",
-    "work_plan"
-  ];
+  const handleMarksSubmit = async () => {
+    const requiredFields = [
+      "literature_survey",
+      "aim",
+      "scope",
+      "need_for_study",
+      "proposed_methodology",
+      "work_plan"
+    ];
 
-  // Validate team-level marks
-  for (const field of requiredFields) {
-    if (!teamMarks[field] || teamMarks[field].toString().trim() === "") {
-      alert(`Please enter marks for ${field.replace(/_/g, ' ')}`);
-      return;
+    // Validate team-level marks
+    for (const field of requiredFields) {
+      if (!teamMarks[field] || teamMarks[field].toString().trim() === "") {
+        alert(`Please enter marks for ${field.replace(/_/g, ' ')}`);
+        return;
+      }
     }
-  }
 
-  // Validate individual marks
-  for (const member of teamMembers) {
-    const memberId = member.reg_num || member.id;
-    const marks = individualMarks[memberId];
-    if (
-      !marks ||
-      marks.oral_presentation === "" ||
-      marks.viva_voce_and_ppt === "" ||
-      marks.contributions === ""
-    ) {
-      alert(`Please fill in all marks for ${member.name || member.student_name}`);
-      return;
+    // Validate individual marks
+    for (const member of teamMembers) {
+      const memberId = member.reg_num || member.id;
+      const marks = individualMarks[memberId];
+      if (
+        !marks ||
+        marks.oral_presentation === "" ||
+        marks.viva_voce_and_ppt === "" ||
+        marks.contributions === ""
+      ) {
+        alert(`Please fill in all marks for ${member.name || member.student_name}`);
+        return;
+      }
     }
-  }
 
-  try {
-    setSubmittingMarks(true);
+    try {
+      setSubmittingMarks(true);
 
-    const { review_title, review_date, team_id } = currentReviewForMarks;
+      const { review_title, review_date, team_id } = currentReviewForMarks;
 
-    //  Get role of the logged-in guide
-    const roleRes = await instance.get(`/user/getRole_guide_or_expert/${guideRegNum}/${team_id}`);
-    const role = roleRes.data; // 'guide' or 'sub_expert'
+      //  Get role of the logged-in guide
+      const roleRes = await instance.get(`/user/getRole_guide_or_expert/${guideRegNum}/${team_id}`);
+      const role = roleRes.data; // 'guide' or 'sub_expert'
 
-    const rolePrefix = role === 'guide' ? 'guide_' : 'expert_';
-    const totalKey = role === 'guide' ? 'total_guide_marks' : 'total_expert_marks';
+      const rolePrefix = role === 'guide' ? 'guide_' : 'expert_';
+      const totalKey = role === 'guide' ? 'total_guide_marks' : 'total_expert_marks';
 
-    // Prepare team payload
-    const teamPayload = {
-      review_title,
-      review_date,
-      team_id,
-      [`${rolePrefix}remarks`]: teamMarks.remarks || ""
-    };
-    requiredFields.forEach(field => {
-      teamPayload[`${rolePrefix}${field}`] = Number(teamMarks[field]);
-    });
-
-    const teamApiUrl = `/${role}/review/add_team_marks/${guideRegNum}`;
-    const teamApiCall = instance.post(teamApiUrl, teamPayload);
-
-    // Prepare individual requests
-    const individualRequests = Object.entries(individualMarks).map(([reg_num, markSet]) => {
-      const oral = Number(markSet.oral_presentation || 0);
-      const ppt = Number(markSet.viva_voce_and_ppt || 0);
-      const contrib = Number(markSet.contributions || 0);
-      const total = oral + ppt + contrib;
-
-      const individualPayload = {
-        team_id,
+      // Prepare team payload
+      const teamPayload = {
         review_title,
         review_date,
-        [`${rolePrefix}oral_presentation`]: oral,
-        [`${rolePrefix}viva_voce_and_ppt`]: ppt,
-        [`${rolePrefix}contributions`]: contrib,
-        [totalKey]: total,
-        [`${rolePrefix}remarks`]: markSet.remarks || "",
+        team_id,
+        [`${rolePrefix}remarks`]: teamMarks.remarks || ""
       };
+      requiredFields.forEach(field => {
+        teamPayload[`${rolePrefix}${field}`] = Number(teamMarks[field]);
+      });
 
-      const url = `/${role}/review/add_marks_to_individual/${guideRegNum}/${reg_num}`;
-      return instance.post(url, individualPayload);
-    });
+      const teamApiUrl = `/${role}/review/add_team_marks/${guideRegNum}`;
+      const teamApiCall = instance.post(teamApiUrl, teamPayload);
 
-    // Send all requests
-    await Promise.all([teamApiCall, ...individualRequests]);
+      // Prepare individual requests
+      const individualRequests = Object.entries(individualMarks).map(([reg_num, markSet]) => {
+        const oral = Number(markSet.oral_presentation || 0);
+        const ppt = Number(markSet.viva_voce_and_ppt || 0);
+        const contrib = Number(markSet.contributions || 0);
+        const total = oral + ppt + contrib;
 
-    //  Cleanup
-    alert("Marks submitted successfully!");
-    setMarksAlreadyEntered(prev => ({
-      ...prev,
-      [currentReviewForMarks.review_id || currentReviewForMarks.id]: true
-    }));
-    setShowMarksModal(false);
-    setCurrentReviewForMarks(null);
-    setTeamMembers([]);
-    setTeamMarks({
-      literature_survey: "",
-      aim: "",
-      scope: "",
-      need_for_study: "",
-      proposed_methodology: "",
-      work_plan: "",
-      remarks: ""
-    });
-    setIndividualMarks({});
+        const individualPayload = {
+          team_id,
+          review_title,
+          review_date,
+          [`${rolePrefix}oral_presentation`]: oral,
+          [`${rolePrefix}viva_voce_and_ppt`]: ppt,
+          [`${rolePrefix}contributions`]: contrib,
+          [totalKey]: total,
+          [`${rolePrefix}remarks`]: markSet.remarks || "",
+        };
 
-  } catch (error) {
-    alert("Failed to submit marks. Please try again.");
-    console.error("Error submitting marks:", error);
-  } finally {
-    setSubmittingMarks(false);
-  }
-};
+        const url = `/${role}/review/add_marks_to_individual/${guideRegNum}/${reg_num}`;
+        return instance.post(url, individualPayload);
+      });
+
+      // Send all requests
+      await Promise.all([teamApiCall, ...individualRequests]);
+
+      //  Cleanup
+      alert("Marks submitted successfully!");
+      setMarksAlreadyEntered(prev => ({
+        ...prev,
+        [currentReviewForMarks.review_id || currentReviewForMarks.id]: true
+      }));
+      setShowMarksModal(false);
+      setCurrentReviewForMarks(null);
+      setTeamMembers([]);
+      setTeamMarks({
+        literature_survey: "",
+        aim: "",
+        scope: "",
+        need_for_study: "",
+        proposed_methodology: "",
+        work_plan: "",
+        remarks: ""
+      });
+      setIndividualMarks({});
+
+    } catch (error) {
+      alert("Failed to submit marks. Please try again.");
+      console.error("Error submitting marks:", error);
+    } finally {
+      setSubmittingMarks(false);
+    }
+  };
 
 
   const renderReviewRequests = (requests, title, isGuide) => (
@@ -535,13 +546,13 @@ const handleMarksSubmit = async () => {
   // Helper function to check if review time has arrived
   const isReviewTimeReached = (reviewDate, startTime) => {
     const now = new Date();
-    
+
     // Extract date from ISO string
     const reviewDateOnly = reviewDate.split('T')[0];
-    
+
     // Create a Date object for the review date and time
     const reviewDateTime = new Date(`${reviewDateOnly}T${startTime}`);
-    
+
     // Check if current time is >= review time
     return now >= reviewDateTime;
   };
@@ -561,12 +572,12 @@ const handleMarksSubmit = async () => {
     allReviews.sort((a, b) => {
       const dateA = a.review_date.split('T')[0];
       const dateB = b.review_date.split('T')[0];
-      
+
       // First compare dates
       if (dateA !== dateB) {
         return dateA.localeCompare(dateB);
       }
-      
+
       // If dates are same, compare times
       return a.start_time.localeCompare(b.start_time);
     });
@@ -606,17 +617,17 @@ const handleMarksSubmit = async () => {
               <p><strong>Review Title:</strong> {rev.review_title || 'N/A'}</p>
               <p><strong>Date:</strong> {rev.review_date.split('T')[0]}</p>
               <p><strong>Time:</strong> {rev.start_time}</p>
-              <p><strong>Google Meet Link:</strong> 
+              <p><strong>Google Meet Link:</strong>
                 {rev.meeting_link ? (
                   isReviewTimeReached(rev.review_date, rev.start_time) ? (
-                    <a 
-                      href={rev.meeting_link} 
-                      target="_blank" 
-                      rel="noreferrer" 
+                    <a
+                      href={rev.meeting_link}
+                      target="_blank"
+                      rel="noreferrer"
                       className="text-blue-600 underline ml-2 hover:text-blue-800 font-medium"
                       onClick={() => handleMeetingLinkClick(rev.key)}
                     >
-                       Join Meeting
+                      Join Meeting
                     </a>
                   ) : (
                     <span className="ml-2 text-gray-500 cursor-not-allowed">
@@ -627,7 +638,7 @@ const handleMarksSubmit = async () => {
                   <span className="ml-2 text-gray-500">Google Meet link not available</span>
                 )}
               </p>
-              
+
               {/* Meeting End Time Section */}
               {rev.meeting_link && isReviewTimeReached(rev.review_date, rev.start_time) && (
                 <div className="mt-4 p-3 bg-white border border-gray-200 rounded">
@@ -643,7 +654,7 @@ const handleMarksSubmit = async () => {
                       <p className="text-sm text-yellow-800 mb-2">
                         📝 <strong>Important:</strong> Please mark the meeting end time after completing the review session.
                       </p>
-                      
+
                       <div className="flex items-center space-x-3">
                         <input
                           type="text"
@@ -656,23 +667,22 @@ const handleMarksSubmit = async () => {
                           className="border border-gray-300 rounded px-3 py-2 text-sm w-40"
                           disabled={isSubmitting}
                         />
-                        
+
                         <button
                           onClick={() => handleEndTimeSubmit(rev)}
                           disabled={!isClicked || isSubmitting || !endTime.trim()}
-                          className={`px-4 py-2 rounded text-sm font-medium ${
-                            !isClicked || !endTime.trim()
-                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                              : isSubmitting
+                          className={`px-4 py-2 rounded text-sm font-medium ${!isClicked || !endTime.trim()
+                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            : isSubmitting
                               ? 'bg-yellow-400 text-white cursor-wait'
                               : 'bg-orange-600 text-white hover:bg-orange-700'
-                          }`}
+                            }`}
                           title={!isClicked ? 'Please join the meeting first to enable this button' : ''}
                         >
                           {isSubmitting ? 'Submitting...' : 'Mark End Time'}
                         </button>
                       </div>
-                      
+
                       {!isClicked && (
                         <p className="text-xs text-gray-600 mt-1">
                           * Button will be enabled after you join the meeting
@@ -836,101 +846,101 @@ const handleMarksSubmit = async () => {
 
 
             {/* Individual Marks */}
-         <div className="mb-6">
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Individual Member Marks</h4>
+            <div className="mb-6">
+              <h4 className="text-sm font-medium text-gray-700 mb-3">Individual Member Marks</h4>
 
-            {teamMembers.map((member) => {
-              const memberId = member.reg_num || member.id;
-              const marks = individualMarks[memberId] || {
-                oral_presentation: "",
-                viva_voce_and_ppt: "",
-                contributions: "",
-                expert_guide_marks: "",
-                remarks: ""
-              };
+              {teamMembers.map((member) => {
+                const memberId = member.reg_num || member.id;
+                const marks = individualMarks[memberId] || {
+                  oral_presentation: "",
+                  viva_voce_and_ppt: "",
+                  contributions: "",
+                  expert_guide_marks: "",
+                  remarks: ""
+                };
 
-              return (
-                <div key={memberId} className="mb-4 border rounded p-3 bg-gray-50">
-                  <div className="font-medium mb-2">
-                    {member.name || member.student_name} ({memberId})
+                return (
+                  <div key={memberId} className="mb-4 border rounded p-3 bg-gray-50">
+                    <div className="font-medium mb-2">
+                      {member.name || member.student_name} ({memberId})
+                    </div>
+
+                    <input
+                      type="number"
+                      min="0"
+                      max="5"
+                      placeholder="Oral Presentation (0-5)"
+                      value={marks.oral_presentation}
+                      onChange={(e) =>
+                        setIndividualMarks((prev) => ({
+                          ...prev,
+                          [memberId]: { ...prev[memberId], oral_presentation: Number(e.target.value) }
+                        }))
+                      }
+                      className="w-full border border-gray-300 rounded px-3 py-2 mb-2"
+                    />
+
+                    <input
+                      type="number"
+                      min="0"
+                      max="5"
+                      placeholder="Viva Voce & PPT (0-5)"
+                      value={marks.viva_voce_and_ppt}
+                      onChange={(e) =>
+                        setIndividualMarks((prev) => ({
+                          ...prev,
+                          [memberId]: { ...prev[memberId], viva_voce_and_ppt: Number(e.target.value) }
+                        }))
+                      }
+                      className="w-full border border-gray-300 rounded px-3 py-2 mb-2"
+                    />
+
+                    <input
+                      type="number"
+                      min="0"
+                      max="5"
+                      placeholder="Contributions (0-5)"
+                      value={marks.contributions}
+                      onChange={(e) =>
+                        setIndividualMarks((prev) => ({
+                          ...prev,
+                          [memberId]: { ...prev[memberId], contributions: Number(e.target.value) }
+                        }))
+                      }
+                      className="w-full border border-gray-300 rounded px-3 py-2 mb-2"
+                    />
+
+                    <input
+                      type="number"
+                      min="0"
+                      max="5"
+                      placeholder="Expert/Guide Marks (0-5)"
+                      value={marks.expert_guide_marks}
+                      onChange={(e) =>
+                        setIndividualMarks((prev) => ({
+                          ...prev,
+                          [memberId]: { ...prev[memberId], expert_guide_marks: Number(e.target.value) }
+                        }))
+                      }
+                      className="w-full border border-gray-300 rounded px-3 py-2 mb-2"
+                    />
+
+                    <input
+                      type="text"
+                      placeholder="Remarks"
+                      value={marks.remarks}
+                      onChange={(e) =>
+                        setIndividualMarks((prev) => ({
+                          ...prev,
+                          [memberId]: { ...prev[memberId], remarks: e.target.value }
+                        }))
+                      }
+                      className="w-full border border-gray-300 rounded px-3 py-2"
+                    />
                   </div>
-
-                  <input
-                    type="number"
-                    min="0"
-                    max="5"
-                    placeholder="Oral Presentation (0-5)"
-                    value={marks.oral_presentation}
-                    onChange={(e) =>
-                      setIndividualMarks((prev) => ({
-                        ...prev,
-                        [memberId]: { ...prev[memberId], oral_presentation: Number(e.target.value) }
-                      }))
-                    }
-                    className="w-full border border-gray-300 rounded px-3 py-2 mb-2"
-                  />
-
-                  <input
-                    type="number"
-                    min="0"
-                    max="5"
-                    placeholder="Viva Voce & PPT (0-5)"
-                    value={marks.viva_voce_and_ppt}
-                    onChange={(e) =>
-                      setIndividualMarks((prev) => ({
-                        ...prev,
-                        [memberId]: { ...prev[memberId], viva_voce_and_ppt: Number(e.target.value) }
-                      }))
-                    }
-                    className="w-full border border-gray-300 rounded px-3 py-2 mb-2"
-                  />
-
-                  <input
-                    type="number"
-                    min="0"
-                    max="5"
-                    placeholder="Contributions (0-5)"
-                    value={marks.contributions}
-                    onChange={(e) =>
-                      setIndividualMarks((prev) => ({
-                        ...prev,
-                        [memberId]: { ...prev[memberId], contributions: Number(e.target.value) }
-                      }))
-                    }
-                    className="w-full border border-gray-300 rounded px-3 py-2 mb-2"
-                  />
-
-                  <input
-                    type="number"
-                    min="0"
-                    max="5"
-                    placeholder="Expert/Guide Marks (0-5)"
-                    value={marks.expert_guide_marks}
-                    onChange={(e) =>
-                      setIndividualMarks((prev) => ({
-                        ...prev,
-                        [memberId]: { ...prev[memberId], expert_guide_marks: Number(e.target.value) }
-                      }))
-                    }
-                    className="w-full border border-gray-300 rounded px-3 py-2 mb-2"
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="Remarks"
-                    value={marks.remarks}
-                    onChange={(e) =>
-                      setIndividualMarks((prev) => ({
-                        ...prev,
-                        [memberId]: { ...prev[memberId], remarks: e.target.value }
-                      }))
-                    }
-                    className="w-full border border-gray-300 rounded px-3 py-2"
-                  />
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
 
 
             {/* Action Buttons */}
@@ -951,14 +961,13 @@ const handleMarksSubmit = async () => {
               <button
                 onClick={handleMarksSubmit}
                 disabled={submittingMarks}
-                className={`px-4 py-2 rounded text-white font-medium ${
-                  submittingMarks
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-green-600 hover:bg-green-700'
-                }`}
+                className={`px-4 py-2 rounded text-white font-medium ${submittingMarks
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-green-600 hover:bg-green-700'
+                  }`}
               >
                 {submittingMarks ? 'Submitting...' : 'Submit Marks'}
-              </button> 
+              </button>
             </div>
           </div>
         </div>

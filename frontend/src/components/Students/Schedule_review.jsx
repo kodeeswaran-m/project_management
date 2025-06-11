@@ -94,6 +94,10 @@ const ScheduleReview = () => {
     }
 
     try {
+      console.log("FormData contents:");
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
       const res = await instance.post(
         `/student/send_review_request/${team_id}/${project_id}/${reg_num}`,
         formData,

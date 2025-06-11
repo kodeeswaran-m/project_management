@@ -38,6 +38,7 @@ const Progress_Update = () => {
       const teamId = teamSelector[0]?.team_id;
       if (!teamId) return;
       const response = await instance.get(`/guide/fetchDeadlines/${teamId}`);
+      console.log(response, "111111111111");
       const data = response.data[0];
       setDeadlines(data);
       determineCurrentWeek(data);
@@ -67,14 +68,14 @@ const Progress_Update = () => {
       setReviewHistory(data);
 
       const currentReview = data.find((r) => r.week_number === currentWeekIndex);
-      
+
       const prevReview = data.find((r) => r.week_number === currentWeekIndex - 1);
 
       if (currentReview) {
         setCurrentWeekStatus(currentReview.status || null);
         setCurrentRemarks(currentReview.remarks || "");
         setCurrentReason(currentReview.reason || "");
-      
+
         if (currentReview.status === "reject") {
           setCanEdit(true);
           setDescription(currentReview.progress);
@@ -152,7 +153,7 @@ const Progress_Update = () => {
 
   let statusMessage = null;
   let details = null;
-  
+
   if (currentWeekStatus === "accept") {
     statusMessage = "✅ This week’s progress is accepted by the guide.";
     details = currentRemarks;
@@ -169,21 +170,21 @@ const Progress_Update = () => {
   return (
     <div className="p-6  w-full mx-auto font-sans">
       <h1 className="text-4xl font-semibold text-center text-gray-900 mb-8">Progress Update</h1>
-     {/* <div className="w-full p-2 text-right"> */}
-  <Link to="/student/week" className="px-4 py-2 bg-purple-500 rounded hover:bg-purple-700 text-white">
-    View Weekly Logs History
-  </Link>
-{/* </div> */}
+      {/* <div className="w-full p-2 text-right"> */}
+      <Link to="/student/week" className="px-4 py-2 bg-purple-500 rounded hover:bg-purple-700 text-white">
+        View Weekly Logs History
+      </Link>
+      {/* </div> */}
 
 
       {statusMessage && (
         <p className="text-center mt-6 font-semibold text-gray-700">{statusMessage}</p>
       )}
-       {details  && (
+      {details && (
         <div className="max-w-3xl mx-auto bg-white border border-gray-200 p-6 rounded-xl shadow-lg">
 
-          <h1 className="bg-white font-semibold ">{currentWeekStatus=="accept"?"Remarks :":"Reason :"}</h1>
-        <h3 className="text-center bg-white mt-6 font-semibold text-gray-600">{details} </h3>
+          <h1 className="bg-white font-semibold ">{currentWeekStatus == "accept" ? "Remarks :" : "Reason :"}</h1>
+          <h3 className="text-center bg-white mt-6 font-semibold text-gray-600">{details} </h3>
         </div>
       )}
 

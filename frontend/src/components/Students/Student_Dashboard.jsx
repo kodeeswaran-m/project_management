@@ -194,6 +194,7 @@ function Student_Dashboard() {
   const handleConfirmTeam = async () => {
     try {
       const regNum = selector.reg_num;
+      const sem = selector.semester;
       console.log(regNum, "regNum", selector.reg_num, "selector");
       const response = await instance.patch(
         '/student/team_request/conform_team',
@@ -202,7 +203,8 @@ function Student_Dashboard() {
           emailId: selector.emailId,
           reg_num: selector.reg_num,
           dept: selector.dept,
-          from_reg_num: regNum
+          from_reg_num: regNum,
+          semester: sem,
         },
         { withCredentials: true }
       );

@@ -115,9 +115,75 @@ router.post("/admin/adduser", userAuth, (req, res, next) => {
 //     next(error);
 //   }
 // });
+// router.post('/admin/insert_deadlines_for_all_teams', async (req, res, next) => {
+//   try {
+//     const { week1, week2, week3, week4, week5, week6, week7, week8, week9, week10, week11, week12 } = req.body.data;
+//     const { semester } = req.body;
+//     const weeks = [week1, week2, week3, week4, week5, week6, week7, week8, week9, week10, week11, week12];
+//     console.log(semester, "sesmmsmmsm");
+//     // Validate dates
+//     const isValidFutureDate = (dateStr) => {
+//       const date = new Date(dateStr);
+//       const today = new Date();
+//       return !isNaN(date.getTime()) && date >= new Date(today.toDateString());
+//     };
+
+//     if (!weeks.every(isValidFutureDate)) {
+//       return next(createError.BadRequest('Invalid or past dates!'));
+//     }
+
+//     // Fetch teams with valid project_id
+//     const [teams] = await db.promise().query(
+//       `SELECT team_id, project_id FROM teams WHERE project_id IS NOT NULL AND semester=${semester}`
+//     );
+//     console.log(teams, teams.length, "team");
+//     if (teams.length === 0) {
+//       return next(createError.NotFound('No teams with project_id found!'));
+//     }
+
+//     // Insert or update deadlines
+//     const sql = `
+//       INSERT INTO weekly_logs_deadlines (
+//         team_id, project_id, week1, week2, week3, week4, week5, week6,
+//         week7, week8, week9, week10, week11, week12
+//       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+//       ON DUPLICATE KEY UPDATE
+//         week1 = VALUES(week1),
+//         week2 = VALUES(week2),
+//         week3 = VALUES(week3),
+//         week4 = VALUES(week4),
+//         week5 = VALUES(week5),
+//         week6 = VALUES(week6),
+//         week7 = VALUES(week7),
+//         week8 = VALUES(week8),
+//         week9 = VALUES(week9),
+//         week10 = VALUES(week10),
+//         week11 = VALUES(week11),
+//         week12 = VALUES(week12)
+//     `;
+
+//     await Promise.all(
+//       teams.map((team) =>
+//         db.promise().query(sql, [
+//           team.team_id, team.project_id,
+//           week1, week2, week3, week4, week5, week6,
+//           week7, week8, week9, week10, week11, week12
+//         ])
+//       )
+//     );
+
+//     res.status(200).send({ message: 'Deadlines updated for all teams.' });
+//   } catch (error) {
+//     console.error('Database error:', error);
+//     next(error);
+//   }
+// });
+// updates deadline for all teams
+
 router.post('/admin/insert_deadlines_for_all_teams', async (req, res, next) => {
   try {
     const { week1, week2, week3, week4, week5, week6, week7, week8, week9, week10, week11, week12 } = req.body.data;
+    const { semester } = req.body;
     const weeks = [week1, week2, week3, week4, week5, week6, week7, week8, week9, week10, week11, week12];
 
     // Validate dates
@@ -133,14 +199,18 @@ router.post('/admin/insert_deadlines_for_all_teams', async (req, res, next) => {
 
     // Fetch teams with valid project_id
     const [teams] = await db.promise().query(
-      'SELECT team_id, project_id FROM teams WHERE project_id IS NOT NULL'
+      `SELECT team_id, project_id FROM teams WHERE project_id IS NOT NULL AND semester=${semester}`
     );
+
     if (teams.length === 0) {
-      return next(createError.NotFound('No teams with project_id found!'));
+      return res.status(404).json({
+        success: false,
+        message: 'No teams with project_id found for this semester!'
+      });
     }
 
-    // Insert or update deadlines
-    const sql = `
+    // Insert or update deadlines for all teams
+    const teamDeadlinesSql = `
       INSERT INTO weekly_logs_deadlines (
         team_id, project_id, week1, week2, week3, week4, week5, week6,
         week7, week8, week9, week10, week11, week12
@@ -160,23 +230,93 @@ router.post('/admin/insert_deadlines_for_all_teams', async (req, res, next) => {
         week12 = VALUES(week12)
     `;
 
-    await Promise.all(
-      teams.map((team) =>
-        db.promise().query(sql, [
-          team.team_id, team.project_id,
-          week1, week2, week3, week4, week5, week6,
-          week7, week8, week9, week10, week11, week12
-        ])
-      )
-    );
+    // Insert or update semester-wise deadlines
+    const semesterDeadlinesSql = `
+  INSERT INTO semester_wise_deadline (
+    semester, week1, week2, week3, week4, week5, week6,
+    week7, week8, week9, week10, week11, week12
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  ON DUPLICATE KEY UPDATE
+    week1 = VALUES(week1),
+    week2 = VALUES(week2),
+    week3 = VALUES(week3),
+    week4 = VALUES(week4),
+    week5 = VALUES(week5),
+    week6 = VALUES(week6),
+    week7 = VALUES(week7),
+    week8 = VALUES(week8),
+    week9 = VALUES(week9),
+    week10 = VALUES(week10),
+    week11 = VALUES(week11),
+    week12 = VALUES(week12)
+`;
 
-    res.status(200).send({ message: 'Deadlines updated for all teams.' });
+    // Execute both operations in parallel
+    await Promise.all([
+      // Update deadlines for all teams
+      Promise.all(
+        teams.map((team) =>
+          db.promise().query(teamDeadlinesSql, [
+            team.team_id, team.project_id,
+            week1, week2, week3, week4, week5, week6,
+            week7, week8, week9, week10, week11, week12
+          ])
+        )
+      ),
+      // Update semester-wise deadlines
+      db.promise().query(semesterDeadlinesSql, [
+        semester,
+        week1, week2, week3, week4, week5, week6,
+        week7, week8, week9, week10, week11, week12
+      ])
+    ]);
+
+    res.status(200).json({
+      success: true,
+      message: 'Deadlines updated for all teams and semester record.'
+    });
   } catch (error) {
     console.error('Database error:', error);
     next(error);
   }
 });
-// updates deadline for all teams
+
+// Add this to your backend routes
+router.get('/admin/get_semester_deadlines/:semester', async (req, res, next) => {
+  try {
+    const { semester } = req.params;
+
+    const [results] = await db.promise().query(
+      `SELECT * FROM semester_wise_deadline WHERE semester = ?`,
+      [semester]
+    );
+
+    if (results.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: null, // Return null if no deadlines exist for this semester
+        message: 'No deadlines found for this semester'
+      });
+    }
+
+    const semesterData = results[0];
+    const weeks = Array(12).fill('').map((_, index) => {
+      return semesterData[`week${index + 1}`] || '';
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        semester: semesterData.semester,
+        weeks: weeks
+      }
+    });
+  } catch (error) {
+    console.error('Database error:', error);
+    next(error);
+  }
+});
+
 router.patch('/admin/update_deadline_for_all_teams', (req, res, next) => {
   try {
     const { week1, week2, week3, week4, week5, week6, week7, week8, week9, week10, week11, week12 } = req.body;

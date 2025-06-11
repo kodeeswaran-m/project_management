@@ -87,7 +87,7 @@ function App() {
                     <Route path="Progress_update" element={<Progress_Update />} />
                     <Route path="week" element={<WeeklyLogsHistory />} />
                   </>
-               )}  
+                )}
               </>
 
             ) : null}
@@ -107,6 +107,8 @@ function App() {
             <Route path="TimeLine/challenge-review" element={<ChallengeReviewAdmin />} />
             <Route path="timeline/assignguideexpert" element={<AssignGuideExpert />} />
             <Route path="timeline/weeklogupdate" element={<WeekLogUpdate />} />
+            <Route path="timeline/weekloginsert" element={<WeekLogUpdate />} />
+
           </Route>
 
           <Route path="/subject_expert" element={<Subject_expert />}>

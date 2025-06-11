@@ -19,13 +19,13 @@ const ChangeTimeLine = () => {
     e.preventDefault();
     setMessage('');
     setError('');
-
+    console.log(newDeadline, week, teamId, "newww");
     try {
       const res = await instance.patch(
         `/admin/update_deadline/${week}/${teamId}`,
         { newDeadline }  // already in "YYYY-MM-DD"
       );
-      setMessage(res.data.message);
+      setMessage(res.data.message, "neww");
     } catch (err) {
       setError(err.response?.data?.message || 'Something went wrong');
     }
@@ -72,12 +72,12 @@ const ChangeTimeLine = () => {
         </div>
         <div className="bg-white text-center">
 
-        <button
-          type="submit"
-          className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800 "
-        >
-          Update Deadline
-        </button>
+          <button
+            type="submit"
+            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800 "
+          >
+            Update Deadline
+          </button>
         </div>
       </form>
 

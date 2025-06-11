@@ -56,7 +56,7 @@ function Student_Dashboard() {
         console.log(error)
       }
     }
-    if (teamSelector&&teamSelector[0]?.team_id) {
+    if (teamSelector && teamSelector[0]?.team_id) {
       fetchDeadline(); // ✅ Call the function inside useEffect
     }
 
@@ -194,7 +194,7 @@ function Student_Dashboard() {
   const handleConfirmTeam = async () => {
     try {
       const regNum = selector.reg_num;
-
+      console.log(regNum, "regNum", selector.reg_num, "selector");
       const response = await instance.patch(
         '/student/team_request/conform_team',
         {
@@ -221,29 +221,31 @@ function Student_Dashboard() {
     if (selector.reg_num) checkUserStatus(selector.reg_num);
   }, [selector.reg_num]);
 
-const [guideName, setGuideName] = useState('');
-const [expertName, setExpertName] = useState('');
+  const [guideName, setGuideName] = useState('');
+  const [expertName, setExpertName] = useState('');
 
-useEffect(() => {
-  if (!userSlice.guide_reg_num || !userSlice.sub_expert_reg_num) return;
+  useEffect(() => {
+    if (!userSlice.guide_reg_num || !userSlice.sub_expert_reg_num) return;
 
-  const getNames = async () => {
-    try {
-      const res1 = await instance.get(`/admin/get_name/${userSlice.guide_reg_num}`);
-      setGuideName(res1.data);
-      const res2 = await instance.get(`/admin/get_name/${userSlice.sub_expert_reg_num}`);
-      setExpertName(res2.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    const getNames = async () => {
+      try {
+        const res1 = await instance.get(`/admin/get_name/${userSlice.guide_reg_num}`);
+        console.log(res1.data[0].name, "res1");
+        setGuideName(res1.data[0].name);
+        const res2 = await instance.get(`/admin/get_name/${userSlice.sub_expert_reg_num}`);
+        console.log(res2, "res2");
+        setExpertName(res2.data[0].name);
+      } catch (error) {
+        console.log(error);
+      }
+    };
 
-  getNames();
-}, []);
+    getNames();
+  }, []);
 
 
 
-  
+
   if (teamStatus === null) {
 
     return <div className='flex flex-col justify-center items-center '><div className="animate-spin rounded-full  flex self-center h-12 w-12 border-t-4 border-blue-500 border-solid mb-4"></div></div>
@@ -277,10 +279,10 @@ useEffect(() => {
                 <div className=" bg-white ">
                   <div className="flex bg-white justify-between items-start mb-1">
                     <ul className='bg-white'>
-                      <h3 className="text-lg bg-white font-medium  text-gray-800">  Project Name : {project && project.length > 0 && project[0].project_name ? project[0].project_name : "Project is not created yet ..."}</h3>
-                      <h3 className="text-lg bg-white font-medium text-gray-800">Project Id : {project && project.length > 0 && project[0].project_id ? project[0].project_id : "Project is not create yet ..."}</h3>
-                      <h3 className="text-lg bg-white font-medium text-gray-800">Cluster : {project && project.length > 0 && project[0]?.cluster ? project[0].cluster : "Project is not create yet ..."}</h3>
-                      <h3 className="text-lg bg-white font-medium text-gray-800">Outcome : {project && project.length > 0 && project[0].outcome ? project[0].outcome : "Project is not create yet ..."}</h3>
+                      <h3 className="text-lg bg-white font-medium  text-gray-800">  Project Name : {project && project.length > 0 && project[0]?.project_name ? project[0]?.project_name : "Project is not created yet ..."}</h3>
+                      <h3 className="text-lg bg-white font-medium text-gray-800">Project Id : {project && project.length > 0 && project[0]?.project_id ? project[0]?.project_id : "Project is not create yet ..."}</h3>
+                      <h3 className="text-lg bg-white font-medium text-gray-800">Cluster : {project && project.length > 0 && project[0]?.cluster ? project[0]?.cluster : "Project is not create yet ..."}</h3>
+                      <h3 className="text-lg bg-white font-medium text-gray-800">Outcome : {project && project.length > 0 && project[0]?.outcome ? project[0]?.outcome : "Project is not create yet ..."}</h3>
                       <h3 className="text-lg bg-white font-medium text-gray-800">Project Picked Date : {readableDate ? readableDate : "Project is not created yet ..."}</h3>
                     </ul>
                   </div>
@@ -301,10 +303,10 @@ useEffect(() => {
               <div className="space-y-4 bg-white">
                 <div className="border-l-4 bg-white border-blue-500 pl-4 py-2">
                   <h3 className="font-medium bg-white text-gray-800">
-                    {deadline && deadline[0].current_week_name}
+                    {deadline && (deadline[0]?.current_week_name || null)}
                   </h3>
                   <p className="text-md text-gray-600 bg-white">
-                    Deadline: {new Date(deadline[0].current_week_deadline).toLocaleDateString()}
+                    Deadline: {new Date(deadline[0]?.current_week_deadline).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="border-l-4 bg-white border-blue-500 pl-4 py-2">

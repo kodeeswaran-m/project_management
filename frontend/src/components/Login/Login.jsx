@@ -10,7 +10,7 @@ import instance from "../../utils/axiosInstance";
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../../utils/firebase";
 import { useDispatch } from "react-redux";
-import { addUser } from "../../utils/userSlice";import { client, account } from './Appwrite';
+import { addUser } from "../../utils/userSlice"; import { client, account } from './Appwrite';
 
 
 function Login() {
@@ -33,7 +33,7 @@ function Login() {
         emailId,
         password,
       });
-
+      console.log(response);
       if (response.status === 200) {
         const { accessToken, refreshToken, role, reg_num } = response.data;
         localStorage.setItem("accessToken", accessToken);
@@ -44,7 +44,7 @@ function Login() {
           const projectTypeRes = await instance.get(`/student/get_project_type/${reg_num}`);
           const projectType = projectTypeRes.data;
           console.log(projectType);
-          
+
 
           if (projectType === "internal" || projectType == "external") {
             navigate("/student");
@@ -65,14 +65,14 @@ function Login() {
     }
   };
 
-  const updateProjectTypeAndNavigate = async (projectType, companyName, companyAddress,contactNumber) => {
+  const updateProjectTypeAndNavigate = async (projectType, companyName, companyAddress, contactNumber) => {
     if (!studentUserData) return;
     const reg_num = studentUserData.reg_num;
 
     try {
       await instance.patch(
         `/student/alter_project_type/${reg_num}/${projectType}`,
-        { "company_name": companyName, "company_address": companyAddress,"company_contact": contactNumber }
+        { "company_name": companyName, "company_address": companyAddress, "company_contact": contactNumber }
       );
 
       setShowStudentPopup(false);
@@ -90,16 +90,16 @@ function Login() {
       alert("Please enter company name ,address and contact number.");
       return;
     }
-    await updateProjectTypeAndNavigate("external", selectedCompany, companyAddress,contactNumber);
+    await updateProjectTypeAndNavigate("external", selectedCompany, companyAddress, contactNumber);
   };
 
-   function handleGoogleLogin() {
+  function handleGoogleLogin() {
     account.createOAuth2Session(
-  'google',
-  'http://localhost:5173/login',
-  'http://localhost:5173/login' 
-);
-}
+      'google',
+      'http://localhost:5173/login',
+      'http://localhost:5173/login'
+    );
+  }
 
   return (
     <>
@@ -146,7 +146,7 @@ function Login() {
                 transform: "translateY(-50%)", cursor: "pointer", color: "#555", fontSize: "18px"
               }}
             >
-              {showpassword ? <FaEye className="bg-white"/> : <FaEyeSlash className="bg-white"/>}
+              {showpassword ? <FaEye className="bg-white" /> : <FaEyeSlash className="bg-white" />}
             </span>
           </div>
 
@@ -215,7 +215,7 @@ function Login() {
                     onChange={(e) => setcompanyAddress(e.target.value)}
                     required
                   />
-                   <input
+                  <input
                     type="number"
                     placeholder="Enter contact number"
                     className="w-full p-2 bg-white border rounded mb-4"
@@ -224,11 +224,11 @@ function Login() {
                     required
                   />
                   <button
-  onClick={() => setSelectedProjectType("")}
-  className="px-6 py-2 mt-2 bg-gray-300 text-black rounded hover:bg-gray-400"
->
-  Back
-</button>
+                    onClick={() => setSelectedProjectType("")}
+                    className="px-6 py-2 mt-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+                  >
+                    Back
+                  </button>
                   <button
                     type="submit"
                     className="px-6 py-3 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700"

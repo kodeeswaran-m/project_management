@@ -87,56 +87,54 @@ router.post("/auth/login", (req, res, next) => {
 });
 
 
-router.post("/auth/refresh-token",async(req,res,next) => {
-   try{
-    const{refreshToken} = req.body;
-    if(!refreshToken) return next(createError.BadRequest("Refresh token is required"));
+router.post("/auth/refresh-token", async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) return next(createError.BadRequest("Refresh token is required"));
 
     const userId = await verifyRefreshToken(refreshToken);
     // creating tokens
-    const newAccessTokens = jwt.sign({id:userId},process.env.ACCESS_TOKEN_SECRET,{expiresIn:"15m"});
-    const newRefreshTokens = jwt.sign({id:userId},process.env.REFRESH_TOKEN_SECRET,{expiresIn:"7d"});
+    const newAccessTokens = jwt.sign({ id: userId }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "15m" });
+    const newRefreshTokens = jwt.sign({ id: userId }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
     // setting in redis
-    await client.set(userId.toString(),newRefreshTokens,{EX: 604800})
+    await client.set(userId.toString(), newRefreshTokens, { EX: 604800 })
     res.status(200).json({
-        message:"new Refresh token successfully generated",
-        "newAccessToken":newAccessTokens,
-        "newRefreshToken":newRefreshTokens
-    })
-   }
-   catch(error)
-   {
-     next(error);
-   }
-})
-
-router.post("/auth/role",(req,res,next) => {
-  try{
-    let sql = "select role from users where emailId = ?";
-    const values = [req.body.emailId];
-    db.query(sql,values,(error,result) => {
-      if(error)return next(error);
-      res.send(result);
+      message: "new Refresh token successfully generated",
+      "newAccessToken": newAccessTokens,
+      "newRefreshToken": newRefreshTokens
     })
   }
-  catch(error)
-  {
+  catch (error) {
     next(error);
   }
 })
 
-router.delete("/auth/logout",async(req,res,next) => {
-    try {
-       res.clearCookie("token", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax"
-      });
-        res.status(200).send("User logged out successfully");
-    }
-    catch (error) {
-        next(error);
-    }
+router.post("/auth/role", (req, res, next) => {
+  try {
+    let sql = "select role from users where emailId = ?";
+    const values = [req.body.emailId];
+    db.query(sql, values, (error, result) => {
+      if (error) return next(error);
+      res.send(result);
+    })
+  }
+  catch (error) {
+    next(error);
+  }
+})
+
+router.delete("/auth/logout", async (req, res, next) => {
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax"
+    });
+    res.status(200).send("User logged out successfully");
+  }
+  catch (error) {
+    next(error);
+  }
 })
 
 // google review

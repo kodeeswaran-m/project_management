@@ -10,7 +10,7 @@ export default function Admin_project_details() {
   useEffect(() => {
     async function fetchTeamDetails() {
       try {
-        const res = await fetch(`http://localhost:1234/student/get_progress_by_project_id/${project_id}`);
+        const res = await fetch(`http://localhost:5000/student/get_progress_by_project_id/${project_id}`);
         if (!res.ok) throw new Error("Failed to fetch team details");
         const data = await res.json();
         console.log("Fetched team data:", data);

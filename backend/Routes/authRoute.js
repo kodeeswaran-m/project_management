@@ -140,64 +140,64 @@ router.delete("/auth/logout", async (req, res, next) => {
 // google review
 // In /auth/google-login route
 
-router.post("/auth/google-login", async (req, res) => {
-  const { token } = req.body;
-  console.log("Received token:", token);
+// router.post("/auth/google-login", async (req, res) => {
+//   const { token } = req.body;
+//   console.log("Received token:", token);
 
-  if (!token) {
-    return res.status(400).json({ message: "No token provided" });
-  }
+//   if (!token) {
+//     return res.status(400).json({ message: "No token provided" });
+//   }
 
-  try {
-    // ✅ Verify token using Google OAuth2Client
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-    const decoded = ticket.getPayload();
-    console.log("Verified Google user:", decoded);
+//   try {
+//     // ✅ Verify token using Google OAuth2Client
+//     const ticket = await client.verifyIdToken({
+//       idToken: token,
+//       audience: process.env.GOOGLE_CLIENT_ID,
+//     });
+//     const decoded = ticket.getPayload();
+//     console.log("Verified Google user:", decoded);
 
-    // ✅ Now lookup your user in DB
-    db.query("SELECT * FROM student WHERE emailId = ?", [decoded.email], async (err, result) => {
-      if (err) {
-        console.error("DB Error:", err);
-        return res.status(500).json({ message: "Internal server error" });
-      }
+//     // ✅ Now lookup your user in DB
+//     db.query("SELECT * FROM student WHERE emailId = ?", [decoded.email], async (err, result) => {
+//       if (err) {
+//         console.error("DB Error:", err);
+//         return res.status(500).json({ message: "Internal server error" });
+//       }
 
-      if (result.length === 0) {
-        return res.status(404).json({ message: "User not found in system" });
-      }
+//       if (result.length === 0) {
+//         return res.status(404).json({ message: "User not found in system" });
+//       }
 
-      const user = result[0];
+//       const user = result[0];
 
-      // ✅ Sign your JWT
-      const jwtToken = jwt.sign(
-        {
-          id: user.id,
-          role: user.role,
-          name: user.name,
-          email: user.emailId,
-        },
-        process.env.TOKEN_SECRET,
-        { expiresIn: "7d" }
-      );
+//       // ✅ Sign your JWT
+//       const jwtToken = jwt.sign(
+//         {
+//           id: user.id,
+//           role: user.role,
+//           name: user.name,
+//           email: user.emailId,
+//         },
+//         process.env.TOKEN_SECRET,
+//         { expiresIn: "7d" }
+//       );
 
-      res.cookie("token", jwtToken, {
-        httpOnly: true,
-        secure: false,
-        sameSite: "lax",
-        maxAge: 60 * 60 * 1000,
-      });
+//       res.cookie("token", jwtToken, {
+//         httpOnly: true,
+//         secure: false,
+//         sameSite: "lax",
+//         maxAge: 60 * 60 * 1000,
+//       });
 
-      res.status(200).json({
-        message: "User logged in successfully",
-        ...user,
-      });
-    });
-  } catch (err) {
-    console.error("Google token verification failed:", err.message);
-    res.status(401).json({ message: "Invalid or expired token" });
-  }
-});
+//       res.status(200).json({
+//         message: "User logged in successfully",
+//         ...user,
+//       });
+//     });
+//   } catch (err) {
+//     console.error("Google token verification failed:", err.message);
+//     res.status(401).json({ message: "Invalid or expired token" });
+//   }
+// });
 
 module.exports = router;

@@ -1,14 +1,14 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Home, UploadCloud, FileText, BarChart2, LogOut } from 'lucide-react';
+import { Home, UploadCloud, FileText, BarChart2, LogOut, HardDriveUpload } from 'lucide-react';
 import college_img from "../../assets/college_img.png";
 import menu from "../../assets/menu.png";
 import wrong from "../../assets/wrong.png";
 import instance from '../../utils/axiosInstance';
 import { useDispatch } from 'react-redux';
-import { removeUser} from '../../utils/userSlice';
+import { removeUser } from '../../utils/userSlice';
 import { removeTeamMembers } from '../../utils/teamSlice';
-import {removeTeamStatus} from "../../utils/teamStatus";
+import { removeTeamStatus } from "../../utils/teamStatus";
 
 function Admin_Navbar({ isOpen, toggleSidebar }) {
   const navigate = useNavigate();
@@ -47,20 +47,17 @@ function Admin_Navbar({ isOpen, toggleSidebar }) {
 
 
   const navDiv = (path) =>
-    `ml-3 mb-10 flex items-center rounded-lg px-3 py-2 ${
-      isActive(path) ? "bg-purple-400 text-white" : "bg-white"
+    `ml-3 mb-10 flex items-center rounded-lg px-3 py-2 ${isActive(path) ? "bg-purple-400 text-white" : "bg-white"
     } ${isOpen ? "w-52" : "w-12"}`;
 
   const navIcon = (path) =>
-    `${
-      isActive(path)
-        ? "bg-purple-400 text-white"
-        : "bg-transparent bg-white text-gray-600 colour-white group-hover:text-purple-600"
+    `${isActive(path)
+      ? "bg-purple-400 text-white"
+      : "bg-transparent bg-white text-gray-600 colour-white group-hover:text-purple-600"
     }`;
 
   const navText = (path) =>
-    `ml-3 text-lg font-medium ${
-      isOpen ? "opacity-100" : "opacity-0 hidden"
+    `ml-3 text-lg font-medium ${isOpen ? "opacity-100" : "opacity-0 hidden"
     } ${isActive(path) ? "bg-purple-400 text-white" : "text-gray-600 bg-white group-hover:text-purple-600"}`;
 
   return (
@@ -100,12 +97,17 @@ function Admin_Navbar({ isOpen, toggleSidebar }) {
           <p className={navText("Add_Users")}>Add Users</p>
         </Link>
 
+        <Link to="Bulk_Upload_Users" className={`${navDiv("Bulk_Upload_Users")} group`}>
+          <HardDriveUpload size={24} className={navIcon("Bulk_Upload_Users")} />
+          <p className={navText("Bulk_Upload_Users")}>BulkUpload Users</p>
+        </Link>
+
         <Link to="posted_projects" className={`${navDiv(["posted_projects", "Add_project"])} group`}>
           <FileText size={24} className={navIcon(["posted_projects", "Add_project"])} />
           <p className={navText(["posted_projects", "Add_project"])}>Posted Projects</p>
         </Link>
 
-         <Link to="timeline" className={`${navDiv("timeline")} group`}>
+        <Link to="timeline" className={`${navDiv("timeline")} group`}>
           <UploadCloud size={24} className={navIcon("timeline")} />
           <p className={navText("timeline")}>TimeLine</p>
         </Link>

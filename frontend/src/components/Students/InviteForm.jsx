@@ -12,6 +12,7 @@ function InviteForm({ inviteForm, handleInviteChange, setIsInviteOpen }) {
     const accessToken = localStorage.getItem("accessToken");
 
     try {
+      // console.log(selector, "inviteform");
       const response = await instance.post("/student/join_request",
         {
           from_reg_num: selector.reg_num,           // sender
@@ -23,7 +24,7 @@ function InviteForm({ inviteForm, handleInviteChange, setIsInviteOpen }) {
       alert(response.data || "Invite sent successfully!");
       setIsInviteOpen(false);
 
-       window.location.href = "/student";
+      window.location.href = "/student";
 
     } catch (err) {
       console.error("Error sending invite", err);

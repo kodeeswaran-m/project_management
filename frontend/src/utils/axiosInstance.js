@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 // Create an Axios instance
 const instance = axios.create({
-  baseURL: "http://localhost:1234",
+  baseURL: "http://localhost:5000",
   withCredentials: true
 });
 

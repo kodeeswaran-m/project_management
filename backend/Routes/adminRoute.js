@@ -4,6 +4,142 @@ const createError = require("http-errors");
 const db = require("../db");
 const userAuth = require("../middlewares/userAuth")
 
+const multer = require('multer');
+const xlsx = require('xlsx');
+const cloudinary = require('cloudinary').v2;
+const fs = require('fs');
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Configure Multer
+const upload = multer({ dest: 'uploads/' });
+
+router.post('/api/admin/bulk-upload-users', upload.single('file'), async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+
+    // 1. Upload to Cloudinary (optional - if you want to keep a copy)
+    const cloudinaryUpload = await cloudinary.uploader.upload(req.file.path, {
+      resource_type: "raw",
+      folder: "user-uploads"
+    });
+
+    // 2. Process the Excel file
+    const workbook = xlsx.readFile(req.file.path);
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const usersData = xlsx.utils.sheet_to_json(worksheet);
+
+    // 3. Validate data
+    const requiredFields = ['emailId', 'role', 'reg_num', 'dept', 'semester', 'phone_number', 'available'];
+    const validUsers = [];
+    const errors = [];
+
+    usersData.forEach((user, index) => {
+      const rowErrors = [];
+
+      // Check required fields
+      requiredFields.forEach(field => {
+        if (!user[field]) {
+          rowErrors.push(`${field} is required`);
+        }
+      });
+
+      // Validate email
+      if (user.emailId && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.emailId)) {
+        rowErrors.push('Invalid email format');
+      }
+
+      if (rowErrors.length > 0) {
+        errors.push({
+          row: index + 2,
+          errors: rowErrors
+        });
+        return;
+      }
+
+      validUsers.push({
+        emailId: user.emailId,
+        role: user.role,
+        reg_num: user.reg_num,
+        dept: user.dept,
+        semester: parseInt(user.semester) || null,
+        phone_number: user.phone_number,
+        available: user.available === 'Yes' || user.available === '1' ? 1 : 0,
+        created_at: new Date()
+      });
+    });
+
+    if (errors.length > 0) {
+      // Clean up the uploaded file
+      fs.unlinkSync(req.file.path);
+
+      return res.status(400).json({
+        success: false,
+        message: 'Validation errors found',
+        errors,
+        cloudinaryUrl: cloudinaryUpload?.secure_url
+      });
+    }
+
+    // 4. Insert into database
+    if (validUsers.length > 0) {
+      const sql = `INSERT INTO users 
+        (emailId, role, reg_num, dept, semester, phone_number, available, created_at) 
+        VALUES ?`;
+
+      const values = validUsers.map(user => [
+        user.emailId,
+        user.role,
+        user.reg_num,
+        user.dept,
+        user.semester,
+        user.phone_number,
+        user.available,
+        user.created_at
+      ]);
+
+      db.query(sql, [values], (error, result) => {
+        // Clean up the uploaded file
+        fs.unlinkSync(req.file.path);
+
+        if (error) {
+          return res.status(500).json({
+            success: false,
+            message: 'Database error',
+            error: error.message
+          });
+        }
+
+        res.json({
+          success: true,
+          message: `${result.affectedRows} users added successfully`,
+          cloudinaryUrl: cloudinaryUpload?.secure_url
+        });
+      });
+    } else {
+      fs.unlinkSync(req.file.path);
+      res.status(400).json({
+        success: false,
+        message: 'No valid users to upload'
+      });
+    }
+  } catch (error) {
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
+    next(error);
+  }
+});
+
+
+
 router.post("/admin/adduser", userAuth, (req, res, next) => {
   try {
     const { name, emailId, password, role, dept, reg_num, phone_number, semester, mentor_name, mentor_reg_num, mentor_emailId } = req.body;
@@ -606,6 +742,7 @@ router.get("/admin/get_timelines", userAuth, (req, res, next) => {
     db.query(sql, (error, result) => {
       if (error) return next(error);
       if (result.affectedRows === 0) return next(createError.BadRequest("rows are not affected!"));
+      console.log(result, "[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
       res.send(result);
     })
   }

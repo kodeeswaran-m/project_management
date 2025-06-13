@@ -110,6 +110,7 @@ router.patch("/sub_expert/accept_reject/:status/:team_id/:semester/:my_id", user
 router.post("/sub_expert/sent_request_to_expert/:semester", userAuth, (req, res, next) => {
   try {
     const { semester } = req.params;
+    console.log(semester, "sasasasasas");
     const { from_team_id, project_id, project_name, to_expert_reg_num } = req.body;
 
     if (!from_team_id || !project_id || !project_name || !Array.isArray(to_expert_reg_num) || to_expert_reg_num.length === 0 || !semester || (semester != 5 && semester != 7)) {

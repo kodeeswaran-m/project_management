@@ -10,7 +10,39 @@ const checkTimeline = require("../middlewares/timeLine");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 const upload = require("../utils/fileUpload");
+// Update project type route
+router.put("/profile/update-project-type", userAuth, (req, res, next) => {
+  try {
+    const { project_type, userId } = req.body;
+    console.log(project_type, userId);
+    if (!userId) return next(createError.BadRequest("User ID not found!"));
+    if (!project_type) return next(createError.BadRequest("Project type is required!"));
 
+    // First update the project type
+    const updateSql = "UPDATE users SET project_type = ? WHERE id = ?";
+    db.query(updateSql, [project_type, userId], (updateError) => {
+      if (updateError) return next(updateError);
+
+      // Then fetch the updated user details
+      const selectSql = "SELECT * FROM users WHERE id = ?";
+      db.query(selectSql, [userId], (selectError, result) => {
+        if (selectError) return next(selectError);
+
+        if (result.length === 0) {
+          return next(createError.NotFound("User not found after update"));
+        }
+
+        res.status(200).json({
+          success: true,
+          message: "Project type updated successfully",
+          data: result[0]
+        });
+      });
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 // common to all route -> for jwt auth
 router.get("/profile/view", userAuth, (req, res, next) => {
   try {
@@ -35,6 +67,85 @@ router.get("/profile/view", userAuth, (req, res, next) => {
     next(error);
   }
 });
+
+router.get("/student/guide_status/:team_id", (req, res, next) => {
+  try {
+    const { team_id } = req.params;
+    // Validate team_id
+    if (!team_id) {
+      return next(createError.BadRequest('Valid team_id is required!'));
+    }
+
+    console.log(`Fetching expert status for team: ${team_id}`);
+
+    const sql = `
+      SELECT to_guide_reg_num, status, reason 
+      FROM guide_requests 
+      WHERE from_team_id = ? `;
+    db.query(sql, [team_id], (error, results) => {
+      if (error) {
+        console.error('Database error:', error);
+        return next(createError.InternalServerError('Database query failed'));
+      }
+
+      if (results.length === 0) {
+        return res.status(200).json({
+          message: 'No pending requests found',
+          data: []
+        });
+      }
+
+      return res.status(200).json({
+        message: 'Requests retrieved successfully',
+        data: results
+      });
+    });
+  } catch (error) {
+    next(error.message);
+  }
+})
+
+router.get("/student/expert_status/:team_id", userAuth, (req, res, next) => {
+  try {
+    const { team_id } = req.params;
+
+    // Validate team_id
+    if (!team_id) {
+      return next(createError.BadRequest('Valid team_id is required!'));
+    }
+
+    console.log(`Fetching expert status for team: ${team_id}`);
+
+    const sql = `
+      SELECT to_expert_reg_num, status, reason 
+      FROM sub_expert_requests 
+      WHERE from_team_id = ? `;
+
+    db.query(sql, [team_id], (error, results) => {
+      if (error) {
+        console.error('Database error:', error);
+        return next(createError.InternalServerError('Database query failed'));
+      }
+
+      if (results.length === 0) {
+        return res.status(200).json({
+          message: 'No pending requests found',
+          data: []
+        });
+      }
+
+      return res.status(200).json({
+        message: 'Requests retrieved successfully',
+        data: results
+      });
+    });
+
+  } catch (error) {
+    console.error('Unexpected error in expert_status route:', error);
+    next(createError.InternalServerError('An unexpected error occurred'));
+  }
+});
+
 
 // adds the connection request in the db -> invite button
 router.post("/student/join_request", userAuth, (req, res, next) => {

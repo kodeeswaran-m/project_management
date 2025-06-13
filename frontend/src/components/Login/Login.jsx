@@ -11,8 +11,32 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../../utils/firebase";
 import { useDispatch } from "react-redux";
 import { addUser } from "../../utils/userSlice"; import { client, account } from './Appwrite';
-
-
+import { styled } from '@mui/material/styles';
+import { Button } from '@mui/material';
+const GoogleButton = styled(Button)(({ theme }) => ({
+  margin: theme.spacing(3, 0, 2),
+  backgroundColor: theme.palette.common.white,
+  color: theme.palette.text.primary,
+  border: `1px solid ${theme.palette.divider}`,
+  padding: theme.spacing(1.5),
+  borderRadius: theme.shape.borderRadius * 2,
+  textTransform: 'none',
+  fontWeight: 500,
+  '&:hover': {
+    backgroundColor: theme.palette.grey[50],
+    boxShadow: theme.shadows[2],
+  },
+  '& .MuiButton-startIcon': {
+    color: '#4285F4',
+  },
+}));
+const GoogleLogo = () => (
+  <img
+    src="https://developers.google.com/identity/images/g-logo.png"
+    alt="Google logo"
+    style={{ width: 20, height: 20 }}
+  />
+);
 function Login() {
   const [emailId, setemailId] = useState("");
   const [password, setpassword] = useState("");
@@ -100,7 +124,12 @@ function Login() {
       'http://localhost:5173/login'
     );
   }
-
+  // const login = () => {
+  //   window.location.href = 'http://localhost:5000/auth/google';
+  // };
+  const login = () => {
+    window.location.href = 'http://localhost:5000/auth/google';
+  };
   return (
     <>
       <div className="login_div">
@@ -156,10 +185,15 @@ function Login() {
             <hr /><span>or</span>
           </div>
 
-          <div className="gdiv" onClick={handleGoogleLogin}>
-            <img src={Google} className="google-logo" alt="Google logo" />
-            <button className="glogin" type="button">Continue with Google</button>
-          </div>
+          <GoogleButton
+            fullWidth
+            variant="contained"
+            startIcon={<GoogleLogo />}
+            onClick={login}
+            size={'medium'}
+          >
+            Continue with Google
+          </GoogleButton>
         </form>
       </div>
 

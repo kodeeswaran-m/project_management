@@ -8,6 +8,8 @@ import { addTeamMembers } from '../../utils/teamSlice';
 import { useNavigate } from 'react-router-dom';
 import { addTeamStatus } from '../../utils/teamStatus';
 import axios from 'axios';
+import StatusDisplay from './StatusDisplay';
+import SelectProjectType from './SelectProjectType';
 
 function Student_Dashboard() {
   const userSlice = useSelector((State) => State.userSlice);
@@ -27,8 +29,13 @@ function Student_Dashboard() {
   });
   const [timeline, setTimeline] = useState(null);
   const [project, setProject] = useState(null);
-  const [deadline, setDeadline] = useState([])
-
+  const [deadline, setDeadline] = useState([]);
+  const [guideName, setGuideName] = useState('');
+  const [expertName, setExpertName] = useState('');
+  const [guideStatusList, setGuideStatusList] = useState([]);
+  const [expertStatusList, setExpertStatusList] = useState([]);
+  // console.log(project, "project");
+  console.log(userSlice.project_type, "student dashboard page");
   useEffect(() => {
     const fetchProjectDetails = async () => {
       try {
@@ -98,14 +105,17 @@ function Student_Dashboard() {
   const fetchTimeline = async () => {
     try {
       const response = await instance.get('/admin/get_timelines');
+      console.log(response, "timelineeeeeeeeeeeeeeee");
       if (response.status === 200 && response.data.length > 0) {
 
         const current = new Date();
+        // console.log(current, "current");
         const active = response.data.find(t => {
           const start = new Date(t.start_date);
           const end = new Date(t.end_date);
           return current >= start && current <= end;
         });
+        console.log(active, "activeeeeeeeeeeeeeee");
         setTimeline(active || null);
       }
     }
@@ -223,20 +233,36 @@ function Student_Dashboard() {
     if (selector.reg_num) checkUserStatus(selector.reg_num);
   }, [selector.reg_num]);
 
-  const [guideName, setGuideName] = useState('');
-  const [expertName, setExpertName] = useState('');
+  const getStatus = async () => {
+    const res1 = await instance.get(`/student/guide_status/${teamSelector?.[0].team_id}`);
+    console.log(res1.data.data, "guide status");
+    if (Array.isArray(res1.data.data) && res1.data.data.length >= 0)
+      setGuideStatusList([...res1.data.data]);
 
+    const res2 = await instance.get(`/student/expert_status/${teamSelector?.[0].team_id}`);
+    console.log(res2.data.data, "expert status");
+    if (Array.isArray(res2.data.data) && res2.data.data.length >= 0)
+      setExpertStatusList(res2.data.data);
+
+
+  }
   useEffect(() => {
-    if (!userSlice.guide_reg_num || !userSlice.sub_expert_reg_num) return;
+    // if (!userSlice.guide_reg_num || !userSlice.sub_expert_reg_num) return;
 
     const getNames = async () => {
       try {
-        const res1 = await instance.get(`/admin/get_name/${userSlice.guide_reg_num}`);
-        console.log(res1.data[0].name, "res1");
-        setGuideName(res1.data[0].name);
-        const res2 = await instance.get(`/admin/get_name/${userSlice.sub_expert_reg_num}`);
-        console.log(res2, "res2");
-        setExpertName(res2.data[0].name);
+        if (userSlice.guide_reg_num) {
+          const res1 = await instance.get(`/admin/get_name/${userSlice.guide_reg_num}`);
+          console.log(res1.data[0].name, "res1");
+          setGuideName(res1.data[0].name);
+        }
+
+        if (userSlice.sub_expert_reg_num) {
+          const res2 = await instance.get(`/admin/get_name/${userSlice.sub_expert_reg_num}`);
+          console.log(res2, "res2");
+          setExpertName(res2.data[0].name);
+        }
+        getStatus();
       } catch (error) {
         console.log(error);
       }
@@ -244,7 +270,7 @@ function Student_Dashboard() {
 
     getNames();
   }, []);
-
+  // console.log(expertStatusList, "outside");
 
 
 
@@ -271,12 +297,15 @@ function Student_Dashboard() {
                 <p className='bg-white'><span className="font-medium bg-white text-gray-700">Email :</span> {userSlice.emailId}</p>
                 <p className='bg-white'><span className="font-medium bg-white text-gray-700">Register Number :</span> {userSlice.reg_num}</p>
                 <p className='bg-white'><span className="font-medium bg-white text-gray-700">Department:</span> {userSlice.dept}</p>
+                {userSlice.project_type !== null ? <p className='bg-white'><span className="font-medium bg-white text-gray-700">Project Type:</span> {userSlice.project_type === 'internal' ? 'Internal' : "External"}</p> : null}
                 <p className='bg-white'><span className="font-medium bg-white text-gray-700">Guide :</span>{guideName} {teamSelector && userSlice?.guide_reg_num ? userSlice.guide_reg_num : "Not Assigned"}</p>
                 <p className='bg-white'><span className="font-medium bg-white text-gray-700">Subject Expert :</span>{expertName} {teamSelector && userSlice?.sub_expert_reg_num ? userSlice.sub_expert_reg_num : "Not Assigned"}</p>
               </div></div>
 
             <div className="mt-10 bg-white p-6 rounded-lg shadow ">
               <h2 className="text-xl font-semibold mb-2 bg-white text-black">Project Details</h2><hr className='mb-4' />
+              {userSlice.project_type === null ? <SelectProjectType /> : null}
+
               <div className="space-y-6 bg-white">
                 <div className=" bg-white ">
                   <div className="flex bg-white justify-between items-start mb-1">
@@ -313,13 +342,13 @@ function Student_Dashboard() {
                 </div>
                 <div className="border-l-4 bg-white border-blue-500 pl-4 py-2">
                   <h3 className="font-medium bg-white text-gray-800">
-                    {deadline[0].current_timeline}
+                    {deadline[0]?.current_timeline}
                   </h3>
                   <p className="text-md text-gray-600 bg-white">
-                    Open date: {new Date(deadline[0].timeline_start_date).toLocaleDateString()}
+                    Open date: {new Date(deadline?.[0]?.timeline_start_date).toLocaleDateString()}
                   </p>
                   <p className="text-md text-gray-600 bg-white">
-                    Deadline: {new Date(deadline[0].timeline_end_date).toLocaleDateString()}
+                    Deadline: {new Date(deadline?.[0]?.timeline_end_date).toLocaleDateString()}
                   </p>
                 </div>
               </div>
@@ -389,8 +418,19 @@ function Student_Dashboard() {
               </div>
 
             </div>
+
           </div>
         </div>
+        {
+          project !== null && project[0]?.project_id ? <StatusDisplay
+            guideStatusList={guideStatusList}
+            expertStatusList={expertStatusList}
+            project={project && project[0] ? project[0] : null}
+            getStatus={getStatus}
+          /> : null
+        }
+
+
       </div>
     );
   }

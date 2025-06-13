@@ -42,6 +42,10 @@ import Guide_queries from "./components/guide/Guide_queries";
 import WeeklyLogsHistory from "./components/Students/week";
 import AssignGuideExpert from "./components/Admin/AssignGuideExpert";
 import WeekLogUpdate from "./components/Admin/WeekLogUpdate";
+import GoogleAuthHandler from "./components/Login/GoogleAuthHandler ";
+import BulkUploadUsers from "./components/Admin/BulkUploadUsers";
+import PrivateRoute from "./components/Login/PrivateRoute";
+import PublicRoute from "./components/Login/PublicRoute";
 
 
 const Loader = () => {
@@ -70,59 +74,76 @@ function App() {
         <Routes>
           <Route path="/" element={<Loader />} />
 
-          <Route path="/login" element={<Login />} />
-
-          <Route path="/student" element={<Student />}>
-            <Route index element={<Student_Dashboard />} />
-            <Route path="invitations" element={<InvitationPage />} />
-            {/* <Route path="Project_Details/proj_details/:id" element={<Proj_Details />} /> */}
-            <Route path="upload-project-files" element={<ProjectFileUpload />} />
-            {teamselector ? (
-              <>
-                <Route path="Project_Details" element={<Project_Details />} />
-                {userselector?.guide_reg_num && (
-                  <>
-                    <Route path="queries" element={<Queries />} />
-                    <Route path="review" element={<Schedule_review />} />
-                    <Route path="Progress_update" element={<Progress_Update />} />
-                    <Route path="week" element={<WeeklyLogsHistory />} />
-                  </>
-                )}
-              </>
-
-            ) : null}
-
+          {/* Public Routes */}
+          <Route element={<PublicRoute />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/google-auth" element={<GoogleAuthHandler />} />
           </Route>
 
-          <Route path="/admin" element={<Admin />}>
-            <Route index element={<Admin_Dashboard />} />
-            <Route path="add_users" element={<Add_Users />} />
-            <Route path="posted_projects" element={<Posted_project />} />
-            <Route path="/admin/posted_projects/:project_id" element={<Admin_project_details />} />
-            <Route path="student_progress/:cluster" element={<Admin_project_details />} />
-            <Route path="TimeLine" element={<TimeLine />} />
-            <Route path="team_list/:department" element={<TeamListByDepartment />} />
-            <Route path="/admin/team_progress/:project_id" element={<Admin_project_details />} />
-            <Route path="TimeLine/change-timeline" element={<ChangeTimeLine />} />
-            <Route path="TimeLine/challenge-review" element={<ChallengeReviewAdmin />} />
-            <Route path="timeline/assignguideexpert" element={<AssignGuideExpert />} />
-            <Route path="timeline/weeklogupdate" element={<WeekLogUpdate />} />
-            <Route path="timeline/weekloginsert" element={<WeekLogUpdate />} />
+          {/* Student Routes */}
+          <Route element={<PrivateRoute allowedRoles={['student']} />}>
+            <Route path="/student" element={<Student />}>
+              <Route index element={<Student_Dashboard />} />
+              <Route path="invitations" element={<InvitationPage />} />
+              {/* <Route path="Project_Details/proj_details/:id" element={<Proj_Details />} /> */}
+              <Route path="upload-project-files" element={<ProjectFileUpload />} />
+              {teamselector ? (
+                <>
+                  <Route path="Project_Details" element={<Project_Details />} />
+                  {userselector?.guide_reg_num && (
+                    <>
+                      <Route path="queries" element={<Queries />} />
+                      <Route path="review" element={<Schedule_review />} />
+                      <Route path="Progress_update" element={<Progress_Update />} />
+                      <Route path="week" element={<WeeklyLogsHistory />} />
+                    </>
+                  )}
+                </>
 
+              ) : null}
+
+            </Route>
           </Route>
+
+          {/* Admin Routes */}
+          <Route element={<PrivateRoute allowedRoles={['admin']} />}>
+            <Route path="/admin" element={<Admin />}>
+              <Route index element={<Admin_Dashboard />} />
+              <Route path="add_users" element={<Add_Users />} />
+              <Route path="Bulk_Upload_Users" element={<BulkUploadUsers />} />
+              <Route path="posted_projects" element={<Posted_project />} />
+              <Route path="/admin/posted_projects/:project_id" element={<Admin_project_details />} />
+              <Route path="student_progress/:cluster" element={<Admin_project_details />} />
+              <Route path="TimeLine" element={<TimeLine />} />
+              <Route path="team_list/:department" element={<TeamListByDepartment />} />
+              <Route path="/admin/team_progress/:project_id" element={<Admin_project_details />} />
+              <Route path="TimeLine/change-timeline" element={<ChangeTimeLine />} />
+              <Route path="TimeLine/challenge-review" element={<ChallengeReviewAdmin />} />
+              <Route path="timeline/assignguideexpert" element={<AssignGuideExpert />} />
+              <Route path="timeline/weeklogupdate" element={<WeekLogUpdate />} />
+              <Route path="timeline/weekloginsert" element={<WeekLogUpdate />} />
+
+            </Route>
+          </Route>
+
+
+          {/* Guide Routes */}
+          <Route element={<PrivateRoute allowedRoles={['staff']} />}>
+            <Route path="/guide" element={<Guide />}>
+              <Route index element={<Staff_dashboard />} />
+              <Route path="queries" element={<Guide_queries />} />
+              <Route path="team_progress" element={<Guide_team_progress />} />
+              <Route path="review_progress" element={<Review_projects />} />
+              <Route path="team-details/:teamId" element={<Team_Details />} />
+            </Route>
+          </Route>
+
+
 
           <Route path="/subject_expert" element={<Subject_expert />}>
             <Route index element={<SubjectExpertDashboard />} />
             <Route path="review" element={<Student_expert_review />} />
             <Route path="remarks" element={<Subject_expert_remarks />} />
-          </Route>
-
-          <Route path="/guide" element={<Guide />}>
-            <Route index element={<Staff_dashboard />} />
-            <Route path="queries" element={<Guide_queries />} />
-            <Route path="team_progress" element={<Guide_team_progress />} />
-            <Route path="review_progress" element={<Review_projects />} />
-            <Route path="team-details/:teamId" element={<Team_Details />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

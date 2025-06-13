@@ -17,7 +17,7 @@ function Header() {
           className='w-12 h-12 mr-3 rounded-full cursor-pointer bg-purple-500 flex items-center justify-center text-white text-2xl font-'
           onClick={() => setShowPopup(!showPopup)}
         >
-          {selector.emailId[0]?.toUpperCase()}
+          {selector?.emailId[0]?.toUpperCase() || "soryyy"}
         </div>
 
         {showPopup && (
@@ -32,7 +32,7 @@ function Header() {
             <h2 className='text-xl bg-white text-black font-bold mb-2'>User Info</h2>
             <div className='text-sm bg-white space-y-1'>
               <p className='bg-white'><strong className='bg-white'>Name:</strong> {selector.name}</p>
-              <p className='bg-white'><strong className='bg-white'>Email:</strong> {selector.emailId}</p>
+              <p className='bg-white'><strong className='bg-white'>Email:</strong> {selector?.emailId}</p>
               <p className='bg-white'><strong className='bg-white'>Reg. Number:</strong> {selector.reg_num}</p>
               <p className='bg-white'><strong className='bg-white'>Department:</strong> {selector.dept}</p>
               <p className='bg-white'><strong className='bg-white'>Password:</strong> ******</p>
@@ -58,7 +58,7 @@ function Header() {
                     className='absolute top-2 right-3 cursor-pointer text-gray-600'
                     onClick={() => setShowNewPassword(!showNewPassword)}
                   >
-                    {showNewPassword ? <FaEye className='bg-white' /> : <FaEyeSlash className='bg-white'/>}
+                    {showNewPassword ? <FaEye className='bg-white' /> : <FaEyeSlash className='bg-white' />}
                   </div>
                 </div>
 

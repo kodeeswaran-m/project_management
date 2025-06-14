@@ -496,7 +496,7 @@ router.patch("/admin/update_deadline/:week/:team_id", userAuth, (req, res, next)
   try {
     const { week, team_id } = req.params;
     let { newDeadline } = req.body;
-    console.log(week, "weeeeeeeeeeeeekkkkkkk");
+    // console.log(week, "weeeeeeeeeeeeekkkkkkk");
     if (!week || !team_id || !newDeadline) return next(createError.BadRequest("week, team_id, or newDeadline is missing!"));
     // validating date and week
     newDeadline = new Date(newDeadline);
@@ -508,11 +508,11 @@ router.patch("/admin/update_deadline/:week/:team_id", userAuth, (req, res, next)
       "week6", "week7", "week8", "week9", "week10",
       "week11", "week12"
     ];
-    console.log(allowedWeeks.includes(week));
+    // console.log(allowedWeeks.includes(week));
     if (!allowedWeeks.includes(week)) {
       return next(createError.BadRequest("Invalid week column name!"));
     }
-    console.log(today > newDeadline, ">>>>>>>>>>.");
+    // console.log(today > newDeadline, ">>>>>>>>>>.");
     if (today > newDeadline) return next(createError.BadRequest("Invalid date!"));
     const year = newDeadline.getFullYear();
     const month = String(newDeadline.getMonth() + 1).padStart(2, '0');
@@ -523,14 +523,10 @@ router.patch("/admin/update_deadline/:week/:team_id", userAuth, (req, res, next)
     let sql1 = "select * from weekly_logs_deadlines where team_id = ?";
     db.query(sql1, [team_id], (error, result) => {
       if (error) return next(error);
-      console.log(result.length, "length");
       if (result.length === 0) return next(createError.BadRequest(`deadlines not exist!`));
-      console.log("sample");
       let sql = `update weekly_logs_deadlines set \`${week}\` = ? where team_id = ?`;
-      console.log(sql, "sql");
       db.query(sql, [newDeadline, team_id], (error, result) => {
         if (error) return next(error);
-        console.log(result, "resulttt");
         if (result.affectedRows === 0) return next(createError.BadRequest("some rows are not affected!"));
         res.status(200).json({ "message": `${week} deadline updated to ${newDeadline}` });
       })

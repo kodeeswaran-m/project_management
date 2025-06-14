@@ -14,7 +14,7 @@ const upload = require("../utils/fileUpload");
 router.put("/profile/update-project-type", userAuth, (req, res, next) => {
   try {
     const { project_type, userId } = req.body;
-    console.log(project_type, userId);
+    // console.log(project_type, userId);
     if (!userId) return next(createError.BadRequest("User ID not found!"));
     if (!project_type) return next(createError.BadRequest("Project type is required!"));
 
@@ -459,12 +459,11 @@ router.patch("/student/team_request/conform_team", userAuth, (req, res, next) =>
       // Check if this user already has accepted requests 
       const checkSql = `SELECT * FROM team_requests WHERE (from_reg_num = ? OR to_reg_num = ?) AND status = 'accept'`;
       db.query(checkSql, [from_reg_num, from_reg_num], (err, rows) => {
-        console.log(rows.length, "lengthlllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll");
+        // console.log(rows.length, "lll");
         if (err) return next(err);
 
         // Case: No team members, solo team
         if (rows.length === 0) {
-          console.log("sampleuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu");
           // Insert leader into teams table
           const insertLeaderIntoTeams = `INSERT INTO teams (team_id, reg_num, semester, is_leader) VALUES (?, ?, ?, 1)`;
           db.query(insertLeaderIntoTeams, [team_id, reg_num, semester], (err) => {

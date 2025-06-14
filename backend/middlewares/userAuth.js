@@ -11,7 +11,7 @@ const userAuth = (req, res, next) => {
     if (!token) return res.status(401).json({ success: false, message: "TokenMissing" });
 
     const decodedMessage = jwt.verify(token, process.env.TOKEN_SECRET);
-    console.log(decodedMessage, "Userauth");
+    // console.log(decodedMessage, "Userauth");
     // Querying database with callback
     let sql = "SELECT * FROM users WHERE id = ?";
     db.query(sql, [decodedMessage.id], (error, result) => {

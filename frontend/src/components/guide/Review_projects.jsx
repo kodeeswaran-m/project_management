@@ -95,10 +95,10 @@ function ReviewProjects() {
     const reviewMap = {};
     for (const team of teams) {
       try {
-        console.log(team, "team", "fetchGuideUpcomingReviews");
+        // console.log(team, "team", "fetchGuideUpcomingReviews");
         const teamId = team.team_id || team.from_team_id;
         const res = await instance.get(`/guide/fetch_upcoming_reviews/${guideRegNum}`);
-        console.log(res.data, "/guide/fetch_upcoming_reviews/");
+        // console.log(res.data, "/guide/fetch_upcoming_reviews/");
         reviewMap[teamId] = res.data;
 
         // Check end time status and marks status for each review
@@ -116,10 +116,10 @@ function ReviewProjects() {
   // Fetch upcoming reviews for expert teams
   const fetchExpertUpcomingReviews = async (teams) => {
     const reviewMap = {};
-    console.log(teams, "here");
+    // console.log(teams, "here");
     for (const team of teams) {
       try {
-        console.log(team, "team1");
+        // console.log(team, "team1");
         const teamId = team.team_id || team.from_team_id;
         const res = await instance.get(`/sub_expert/fetch_upcoming_reviews/${guideRegNum}`);
         console.log(res.data);
@@ -145,7 +145,7 @@ function ReviewProjects() {
         let teamsList = Array.isArray(res.data) && res.data.length > 0 ? res.data : [];
 
         setExpertTeams(teamsList);
-        console.log(teamsList, "data");
+        // console.log(teamsList, "data");
         fetchExpertUpcomingReviews(teamsList);
       } catch (error) {
         console.log(error);
@@ -165,7 +165,7 @@ function ReviewProjects() {
         let teamsList = Array.isArray(res.data) && res.data.length > 0 ? res.data : [];
 
         setExpertTeams(teamsList);
-        console.log(teamsList, "data");
+        // console.log(teamsList, "data");
         fetchExpertUpcomingReviews(teamsList);
       } catch (error) {
         console.log(error, "adadadadadadadadad");

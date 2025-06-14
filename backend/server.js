@@ -95,7 +95,7 @@ passport.use(
             try {
                 const email = profile.emails[0].value;
                 const findUserSql = "SELECT * FROM users WHERE google_id = ? OR emailId = ?";
-                console.log(profile.name, "profile.name");
+                // console.log(profile.name, "profile.name");
 
                 db.query(findUserSql, [profile.id, email], async (error, users) => {
                     if (error) return done(error);
@@ -214,16 +214,15 @@ app.get(
 
 app.get("/api/user", authenticateJWT, (req, res, next) => {
     try {
-        console.log(req.user.id, "/api/user");
+        // console.log(req.user.id, "/api/user");
         const sql = "SELECT * FROM users WHERE id = ?";
         db.query(sql, [req.user.id], async (error, users) => {
             if (error) return next(error);
             if (users.length === 0) {
                 return res.status(404).json({ error: "User not found" });
             }
-            console.log(users);
+            // console.log(users);
             const user = users[0];
-            console.log(user, "aaaaaaaaaaa");
             // const userDetails = await getUserDetails(user.email);
 
             res.json({

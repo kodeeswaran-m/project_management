@@ -110,7 +110,6 @@ router.patch("/sub_expert/accept_reject/:status/:team_id/:semester/:my_id", user
 router.post("/sub_expert/sent_request_to_expert/:semester", userAuth, (req, res, next) => {
   try {
     const { semester } = req.params;
-    console.log(semester, "sasasasasas");
     const { from_team_id, project_id, project_name, to_expert_reg_num } = req.body;
 
     if (!from_team_id || !project_id || !project_name || !Array.isArray(to_expert_reg_num) || to_expert_reg_num.length === 0 || !semester || (semester != 5 && semester != 7)) {
@@ -231,12 +230,10 @@ router.get("/sub_expert/fetch_teams/:expert_id", (req, res, next) => {
 router.get("/sub_expert/fetch_review_requests/:expert_reg_num", userAuth, (req, res, next) => {
   try {
     const { expert_reg_num } = req.params;
-    console.log(expert_reg_num, "aaaaaaaaaaaaaaaaaaa");
     if (!expert_reg_num) return next(createError.BadRequest("expert id is undefined!"));
     let sql = "select * from review_requests where expert_reg_num = ? and expert_status = 'interested'";
     db.query(sql, [expert_reg_num], (error, result) => {
       if (error) return next(error);
-      console.log(result, "bbbbbbbbbbbbb");
       return res.send(result);
     })
   }
@@ -250,11 +247,9 @@ router.get("/sub_expert/fetch_review_requests/:expert_reg_num", userAuth, (req, 
 router.get('/sub_expert/fetch_upcoming_reviews/:expert_reg_num', (req, res, next) => {
   try {
     const { expert_reg_num } = req.params;
-    console.log(expert_reg_num, "expert_reg_num");
     if (!expert_reg_num) return next(createError.BadRequest('expert register number is undefined!'));
     let sql = `SELECT * FROM scheduled_reviews WHERE expert_reg_num = ? AND (attendance IS NULL OR attendance = '')AND CONCAT(review_date, ' ', start_time) >= NOW() - INTERVAL 3 HOUR;`;
     db.query(sql, [expert_reg_num], (error, result) => {
-      console.log(result, "qqqqqqqqqqqqqqqqqq");
       if (error) return next(error);
       if (result.length === 0) return next(createError.NotFound('meeting links not found!'));
 

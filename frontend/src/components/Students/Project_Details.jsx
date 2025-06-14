@@ -241,9 +241,9 @@ const Project_Details = () => {
 
     try {
       // Step 1: Submit project
-      console.log(userselector, "dddddddddd");
-      console.log(teamselector, "cccccccccccc");
-      console.log(projectName, "aaaaaaaaaaa");
+      // console.log(userselector, "dddddddddd");
+      // console.log(teamselector, "cccccccccccc");
+      // console.log(projectName, "aaaaaaaaaaa");
 
       const response = await instance.post(
         `/student/addproject/${userselector.project_type}/${teamselector[0].team_id}/${userselector.reg_num}`,

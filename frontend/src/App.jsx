@@ -66,7 +66,7 @@ function App() {
 
   const userselector = useSelector((State) => State.userSlice);
   const teamselector = useSelector((state) => state.teamSlice);
-
+  console.log(userselector, "user selector");
   return (
     <Provider store={Store}>
       <BrowserRouter>

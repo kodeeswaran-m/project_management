@@ -108,7 +108,7 @@ const StatusDisplay = ({ guideStatusList = [], expertStatusList = [], project = 
             console.log(error, "error");
         }
     };
-    console.log(guideStatusList, "[[[[[[[[[[[[[[[[[[[[[[[[");
+    console.log(expertStatusList, "[[[[[[[[[[[[[[[[[[[[[[[[");
     return (
         <div className="bg-white mt-10 p-6 rounded-lg shadow-sm">
             <div className="mb-8">
@@ -140,7 +140,7 @@ const StatusDisplay = ({ guideStatusList = [], expertStatusList = [], project = 
                         </tbody>
                     </table>
                 </div>
-                {guideStatusList.length > 0 && guideStatusList.every(item => item.status === 'reject') ?
+                {(guideStatusList.length > 0 && guideStatusList.every(item => item.status === 'reject')) || guideStatusList.length === 0 ?
                     (<div className="mb-6 bg-white">
                         <h3 className="text-md bg-white font-medium mb-2">Select Guides:</h3>
                         <form onSubmit={(e) => handleSubmit(e, 'guide')}>
@@ -197,7 +197,7 @@ const StatusDisplay = ({ guideStatusList = [], expertStatusList = [], project = 
                     </table>
                     {/* Subject Experts Dropdown */}
                 </div>
-                {guideStatusList.every(status => status === 'reject') ? (
+                {expertStatusList.every(status => status === 'reject') || expertStatusList.length === 0 ? (
                     <div className="mb-6 bg-white">
                         <h3 className="text-md bg-white font-medium mb-2">Select Subject Experts:</h3>
                         <form onSubmit={(e) => handleSubmit(e, 'expert')}>

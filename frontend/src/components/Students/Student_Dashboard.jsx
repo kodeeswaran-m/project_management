@@ -272,7 +272,12 @@ function Student_Dashboard() {
   }, []);
   // console.log(expertStatusList, "outside");
 
+  function handleInviteButton() {
+    if (userSlice.project_type === null) {
 
+    }
+    setIsInviteOpen(true)
+  }
 
   if (teamStatus === null) {
 
@@ -304,7 +309,7 @@ function Student_Dashboard() {
 
             <div className="mt-10 bg-white p-6 rounded-lg shadow ">
               <h2 className="text-xl font-semibold mb-2 bg-white text-black">Project Details</h2><hr className='mb-4' />
-              {userSlice.project_type === null ? <SelectProjectType /> : null}
+              {/* {userSlice.project_type === null ? <SelectProjectType /> : null} */}
 
               <div className="space-y-6 bg-white">
                 <div className=" bg-white ">
@@ -470,6 +475,8 @@ function Student_Dashboard() {
           <p className=' bg-white '><strong className=' bg-white '>Email:</strong> {selector.emailId}</p>
           <p className=' bg-white '><strong className=' bg-white '>Register Number:</strong> {selector.reg_num}</p>
           <p className=' bg-white '><strong className=' bg-white '>Department:</strong> {selector.dept}</p>
+          {userSlice.project_type === null ? <SelectProjectType /> : null}
+
         </div>
 
         {acceptedMembers.map((member, idx) => (
@@ -506,14 +513,14 @@ function Student_Dashboard() {
         <div className='flex gap-40'>
           {(acceptedMembers.length + 1 < totalMembersAllowed) && timeline && (
             <button
-              onClick={() => setIsInviteOpen(true)}
+              onClick={handleInviteButton}
               className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
             >
               Invite Member
             </button>
           )}
 
-          {(acceptedMembers.length + 1 >= 1 && teamStatus !== 1 && timeline) && (
+          {(acceptedMembers.length + 1 >= 1 && teamStatus !== 1 && timeline && userSlice.project_type !== null) && (
             <button
               onClick={handleConfirmTeam}
               className="px-4 py-2 bg-green-600 text-white rounded "

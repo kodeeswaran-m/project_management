@@ -22,14 +22,11 @@ const GoogleButton = styled(Button)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius * 2,
   textTransform: 'none',
   fontWeight: 500,
-  '&:hover': {
-    backgroundColor: theme.palette.grey[50],
-    boxShadow: theme.shadows[2],
-  },
   '& .MuiButton-startIcon': {
     color: '#4285F4',
   },
 }));
+
 const GoogleLogo = () => (
   <img
     src="https://developers.google.com/identity/images/g-logo.png"
@@ -37,6 +34,7 @@ const GoogleLogo = () => (
     style={{ width: 20, height: 20 }}
   />
 );
+
 function Login() {
   const [emailId, setemailId] = useState("");
   const [password, setpassword] = useState("");

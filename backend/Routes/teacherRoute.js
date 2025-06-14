@@ -12,7 +12,7 @@ router.post("/teacher/addproject/:project_type", (req, res, next) => {
       return res.status(400).json({ message: "Required fields are missing." });
     }
 
-    if(project_type!= 'INTERNAL' && project_type != 'EXTERNAL')return next(createError.BadRequest("invalid project_type"))
+    if (project_type != 'INTERNAL' && project_type != 'EXTERNAL') return next(createError.BadRequest("invalid project_type"))
 
     const sql = "SELECT COUNT(*) AS count FROM projects";
     db.query(sql, (error, result) => {
@@ -35,47 +35,44 @@ router.post("/teacher/addproject/:project_type", (req, res, next) => {
   }
 });
 
-router.get("/teacher/fetch_all_projects",(req,res,next) => {
-  try{
+router.get("/teacher/fetch_all_projects", (req, res, next) => {
+  try {
     let sql = "select * from projects";
-    db.query(sql,(error,result) => {
-      if(error) return next(error);
+    db.query(sql, (error, result) => {
+      if (error) return next(error);
       res.send(result);
     })
   }
-  catch(error)
-  {
+  catch (error) {
     next(error);
   }
 })
 
-router.get("/teacher/getprojects",(req,res,next) => {
-  try{
+router.get("/teacher/getprojects", (req, res, next) => {
+  try {
     let sql = "select * from projects";
-    db.query(sql,(error,result) => {
-      if(error)return next(error);
-      console.log(result);
+    db.query(sql, (error, result) => {
+      if (error) return next(error);
+      // console.log(result);
       res.send(result);
 
     })
   }
-  catch(error)
-  {
+  catch (error) {
     next(error.message);
   }
 })
 
-router.get("/teacher/get_projects_by_cluster/:cluster",(req,res,next) => {
-  try{
+router.get("/teacher/get_projects_by_cluster/:cluster", (req, res, next) => {
+  try {
     let cluster = req.params.cluster;
     let sql = "select * from projects where cluster = ?";
-    db.query(sql,[cluster],(error,result) => {
-      if(error)return next(error);
+    db.query(sql, [cluster], (error, result) => {
+      if (error) return next(error);
       else res.send(result);
     })
   }
-  catch(error)
-  {
+  catch (error) {
     next(error);
   }
 })

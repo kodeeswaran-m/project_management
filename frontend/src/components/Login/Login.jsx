@@ -115,18 +115,16 @@ function Login() {
     await updateProjectTypeAndNavigate("external", selectedCompany, companyAddress, contactNumber);
   };
 
-  function handleGoogleLogin() {
-    account.createOAuth2Session(
-      'google',
-      'http://localhost:5173/login',
-      'http://localhost:5173/login'
-    );
-  }
-  // const login = () => {
-  //   window.location.href = 'http://localhost:5000/auth/google';
-  // };
+  // function handleGoogleLogin() {
+  //   account.createOAuth2Session(
+  //     'google',
+  //     'http://localhost:5173/login',
+  //     'http://localhost:5173/login'
+  //   );
+  // }
+
   const login = () => {
-    window.location.href = 'http://localhost:5000/auth/google';
+    window.location.href = `${import.meta.env.VITE_CLIENT_URL}/auth/google`;
   };
   return (
     <>

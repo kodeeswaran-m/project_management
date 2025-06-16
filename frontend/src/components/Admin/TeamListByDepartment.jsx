@@ -10,7 +10,7 @@ export default function TeamListByDepartment() {
   useEffect(() => {
     async function fetchProjects() {
       try {
-        const res = await fetch(`http://localhost:5000/student/projects`, {
+        const res = await fetch(`${import.meta.env.VITE_CLIENT_URL}/student/projects`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: "include",

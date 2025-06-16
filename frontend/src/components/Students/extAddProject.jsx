@@ -47,7 +47,7 @@ function extAddProject() {
 
     try {
       const accessToken = localStorage.getItem("accessToken");
-      const response = await instance.post('http://localhost:5000/teacher/addproject', projectData);
+      const response = await instance.post(`${import.meta.env.VITE_CLIENT_URL}/teacher/addproject`, projectData);
 
       if (response.status === 200) {
         alert('Project added successfully!');

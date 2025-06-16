@@ -18,10 +18,15 @@ export const getProfile = async (dispatch, navigate) => {
       }
     } else {
       console.error("Failed to fetch profile:", response.status);
+      navigate("/login");
     }
   } catch (error) {
     console.error("Error fetching profile:", error.response?.data?.message || error.message);
-      navigate("/login");
+    if (error.response?.status === 401) {
+      // Clear any existing token if present
+      document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    }
+    navigate("/login");
   }
 };
 

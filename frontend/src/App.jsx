@@ -53,13 +53,20 @@ const Loader = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    getProfile(dispatch, navigate);
+    const loadProfile = async () => {
+      try {
+        await getProfile(dispatch, navigate);
+      } catch (error) {
+        navigate("/login");
+      }
+    };
+
+    loadProfile();
   }, [dispatch, navigate]);
 
   return <div className="flex justify-center items-center h-40">
     <div className="w-10 h-10 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
-  </div>
-    ;
+  </div>;
 };
 
 function App() {
@@ -75,10 +82,10 @@ function App() {
           <Route path="/" element={<Loader />} />
 
           {/* Public Routes */}
-          <Route element={<PublicRoute />}>
-            <Route path="/login" element={<Login />} />
-            <Route path="/google-auth" element={<GoogleAuthHandler />} />
-          </Route>
+          {/* <Route element={<PublicRoute />}> */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/google-auth" element={<GoogleAuthHandler />} />
+          {/* </Route> */}
 
           {/* Student Routes */}
           <Route element={<PrivateRoute allowedRoles={['student']} />}>

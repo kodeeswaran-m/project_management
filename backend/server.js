@@ -40,16 +40,16 @@ app.use(
     })
 );
 
-// Helper functions
-function getUserDetails(email) {
-    return new Promise((resolve, reject) => {
-        const sql = "SELECT * FROM users WHERE emailId = ?";
-        db.query(sql, [email], (error, results) => {
-            if (error) return reject(error);
-            resolve(results[0] || null);
-        });
-    });
-}
+// // Helper functions
+// function getUserDetails(email) {
+//     return new Promise((resolve, reject) => {
+//         const sql = "SELECT * FROM users WHERE emailId = ?";
+//         db.query(sql, [email], (error, results) => {
+//             if (error) return reject(error);
+//             resolve(results[0] || null);
+//         });
+//     });
+// }
 
 function generateToken(user) {
     return jwt.sign(

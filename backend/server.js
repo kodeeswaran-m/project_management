@@ -29,7 +29,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(passport.initialize());
-
+console.log(process.env.CLIENT_URL);
 app.use(
     cors({
         origin: process.env.CLIENT_URL || "http://localhost:5173",

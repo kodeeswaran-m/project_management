@@ -4,11 +4,13 @@ const generateWeeklyDeadlines = require("../utils/generateWeeklyDeadlines");
 const nodemailer = require("nodemailer");
 require("dotenv").config()
 
-cron.schedule("0 0 * * *", () => {// runs every day on midnight 00:00 AM -> to create deadlines for weekly logs (automatic way)
+
+// runs every day on midnight 00:00 AM -> to create deadlines for weekly logs (automatic way)
+cron.schedule("0 0 * * *", () => {
   console.log("Checking timelines for all teams...");
 
   //fetches the team with with not null as project_id  and in timeline cron_executed is false
-   const timelineQuery = `
+  const timelineQuery = `
     SELECT t.team_id, t.start_date, tr.project_id
     FROM timeline t
     JOIN team_requests tr ON tr.team_id = t.team_id
@@ -71,7 +73,7 @@ cron.schedule("0 0 * * *", () => {// runs every day on midnight 00:00 AM -> to c
       }
     });
   });
-},{
+}, {
   timezone: "Asia/Kolkata"
 });
 
@@ -109,10 +111,8 @@ function sendReminderToTeam(team_id) {
 }
 
 
-
 // cron to mark attendence as absent and also as presnt
 // Run every 10 minutes
-
 cron.schedule("*/10 * * * *", () => {
   console.log(" Running cron job to mark attendance...");
 
